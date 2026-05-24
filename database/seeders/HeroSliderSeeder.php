@@ -46,7 +46,7 @@ class HeroSliderSeeder extends Seeder
         ];
 
         foreach ($sliders as $data) {
-            HeroSlider::create($data);
+            HeroSlider::updateOrCreate(['order' => $data['order']], $data);
         }
     }
 }

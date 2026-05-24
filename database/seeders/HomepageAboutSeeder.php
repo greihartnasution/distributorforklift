@@ -9,7 +9,7 @@ class HomepageAboutSeeder extends Seeder
 {
     public function run(): void
     {
-        HomepageAbout::create([
+        HomepageAbout::updateOrCreate(['id' => 1], [
             'section_title'   => 'Tentang Perusahaan',
             'title'           => 'Mitra terpercaya solusi material handling industri Indonesia',
             'description'     => 'Kami mengimplementasikan pengelolaan cerdas peralatan material handling, perangkat lunak, dan layanan untuk berbagai industri besar di Indonesia.',
