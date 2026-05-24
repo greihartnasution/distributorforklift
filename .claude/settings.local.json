@@ -13,7 +13,20 @@
       "Bash(git rm *)",
       "Bash(git check-ignore *)",
       "Bash(git add *)",
-      "Bash(git restore *)"
+      "Bash(git restore *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\app\\\\Http\\\\Controllers\" -File)",
+      "Bash(Select-Object Name)",
+      "PowerShell(Get-ChildItem \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\" | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Homepage\" | ForEach-Object { $_.Name })",
+      "PowerShell($env:DB_HOST=\"shinkansen.proxy.rlwy.net\"; $env:DB_PORT=\"11721\"; $env:DB_DATABASE=\"railway\"; $env:DB_USERNAME=\"root\"; $env:DB_PASSWORD=\"wSmCNdSaZuZmRhjhvFvfWYfttWLWuAaH\"; php artisan migrate --force)",
+      "PowerShell(php artisan migrate)",
+      "PowerShell(php artisan db:seed --class=NewsSeeder)",
+      "PowerShell(php artisan tinker --execute=\"echo App\\\\Models\\\\News::count\\(\\) . ' artikel seeded';\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Components\\\\Admin\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"done\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Components\\\\Admin\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\News\")"
     ]
   }
 }

@@ -182,7 +182,9 @@
                         @mouseenter="openMenu(item)"
                         @mouseleave="scheduleClose"
                     >
-                        <button
+                        <component
+                            :is="item.href ? 'a' : 'button'"
+                            :href="item.href ?? undefined"
                             :class="[
                                 'flex items-center gap-1 px-4 text-lg transition-colors duration-150 whitespace-nowrap border-b-[3px] -mb-px h-full',
                                 activeMenu === item.label
@@ -208,7 +210,7 @@
                                     d="M19 9l-7 7-7-7"
                                 />
                             </svg>
-                        </button>
+                        </component>
                     </div>
                 </div>
 
@@ -384,8 +386,10 @@
                     :key="item.label"
                     class="border-b border-gray-50 last:border-0"
                 >
-                    <button
-                        @click="toggleMobileItem(item.label)"
+                    <component
+                        :is="item.href ? 'a' : 'button'"
+                        :href="item.href ?? undefined"
+                        @click="item.href ? null : toggleMobileItem(item.label)"
                         class="flex items-center justify-between w-full py-3.5 font-bold text-lg text-slate-700 hover:text-orange-600 transition-colors"
                     >
                         <span>{{ item.label }}</span>
@@ -406,7 +410,7 @@
                                 d="M19 9l-7 7-7-7"
                             />
                         </svg>
-                    </button>
+                    </component>
 
                     <!-- Mobile sub-items -->
                     <div
@@ -626,6 +630,7 @@ const navItems = [
     },
     {
         label: "Berita",
+        href: route("news.index"),
         subItems: null,
     },
     {

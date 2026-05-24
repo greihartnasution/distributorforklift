@@ -290,7 +290,7 @@
         <!-- ============================================================
          NEWS SECTION — Horizontal cards
     ============================================================ -->
-        <section class="bg-white py-20">
+        <section v-if="news.length > 0" class="bg-white py-20">
             <div class="max-w-screen-xl mx-auto px-4">
                 <!-- Section Header -->
                 <h2
@@ -336,7 +336,7 @@
                             {{ article.excerpt }}
                         </p>
                         <a
-                            href="#"
+                            :href="route('news.show', article.slug)"
                             class="inline-flex items-center gap-1.5 md:text-xl font-semibold text-orange-600 hover:text-orange-700 transition-colors duration-200"
                         >
                             Baca Selengkapnya
@@ -360,7 +360,7 @@
                 <!-- Mobile: Lihat Semua -->
                 <div class="mt-16 text-center">
                     <a
-                        href="#"
+                        :href="route('news.index')"
                         class="inline-flex items-center gap-2 md:text-xl font-bold px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white transition-colors duration-200"
                     >
                         Lihat Semua Berita
@@ -565,6 +565,7 @@ import InquiryForm from "@/Components/Public/InquiryForm.vue";
 const props = defineProps({
     sliders: { type: Array, default: () => [] },
     about: { type: Object, default: null },
+    news: { type: Array, default: () => [] },
 });
 
 // ── Hero Slider ──────────────────────────────────────────────────
@@ -665,33 +666,6 @@ const stats = [
     { value: "24/7", label: "Dukungan Teknis" },
 ];
 
-// ── News ─────────────────────────────────────────────────────────
-const news = [
-    {
-        category: "Industri",
-        date: "15 Mei 2026",
-        title: "Tren Otomasi Gudang 2026: Peran Forklift Elektrik",
-        excerpt:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Perkembangan teknologi forklift elektrik semakin mendominasi industri logistik modern.",
-        image: "https://picsum.photos/seed/news1/600/400",
-    },
-    {
-        category: "Produk",
-        date: "10 Mei 2026",
-        title: "Peluncuran Seri Forklift Reach Truck Terbaru 2026",
-        excerpt:
-            "Kami dengan bangga memperkenalkan seri reach truck generasi terbaru dengan kapasitas angkat hingga 2,5 ton dan efisiensi energi superior.",
-        image: "https://picsum.photos/seed/news2/600/400",
-    },
-    {
-        category: "Tips & Panduan",
-        date: "05 Mei 2026",
-        title: "Panduan Lengkap Perawatan Forklift agar Awet",
-        excerpt:
-            "Perawatan rutin adalah kunci umur panjang forklift Anda. Berikut panduan lengkap perawatan yang wajib dilakukan setiap bulan.",
-        image: "https://picsum.photos/seed/news3/600/400",
-    },
-];
 
 // ── Brands ───────────────────────────────────────────────────────
 const brands = ["TOYOTA", "KOMATSU", "LINDE", "HYSTER", "CROWN", "MITSUBISHI"];
