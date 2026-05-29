@@ -238,9 +238,11 @@
             <div class="max-w-screen-xl mx-auto px-6 py-7 flex gap-0 relative">
                 <!-- Left Panel: Sub-categories (orange) -->
                 <div class="w-64 flex-shrink-0 border-r border-gray-100 pr-6">
-                    <button
+                    <component
+                        :is="sub.href ? 'a' : 'button'"
                         v-for="sub in activeMegaData.subItems"
                         :key="sub.label"
+                        :href="sub.href ?? undefined"
                         @mouseenter="activeSubItem = sub.label"
                         :class="[
                             'flex items-center justify-between w-full text-left px-3 py-2.5 text-xl rounded transition-colors duration-150',
@@ -264,7 +266,7 @@
                                 d="M9 5l7 7-7 7"
                             />
                         </svg>
-                    </button>
+                    </component>
                 </div>
 
                 <!-- Right Panel: Children of hovered sub-item -->
@@ -374,8 +376,10 @@
                         class="pl-4 pb-3 space-y-1"
                     >
                         <div v-for="sub in item.subItems" :key="sub.label">
-                            <button
-                                @click="toggleMobileSubItem(sub.label)"
+                            <component
+                                :is="sub.href ? 'a' : 'button'"
+                                :href="sub.href ?? undefined"
+                                @click="sub.href ? null : toggleMobileSubItem(sub.label)"
                                 class="flex items-center justify-between w-full py-2 text-lg text-orange-500 hover:text-orange-700 font-medium transition-colors"
                             >
                                 <span>{{ sub.label }}</span>
@@ -397,7 +401,7 @@
                                         d="M9 5l7 7-7 7"
                                     />
                                 </svg>
-                            </button>
+                            </component>
                             <div
                                 v-if="
                                     sub.children &&
