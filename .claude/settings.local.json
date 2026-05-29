@@ -32,7 +32,9 @@
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Page\")",
       "PowerShell(New-Item -ItemType File -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Page\\\\Index.vue\")",
       "PowerShell(New-Item -ItemType File -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Page\\\\Create.vue\")",
-      "PowerShell(New-Item -ItemType File -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Page\\\\Edit.vue\")"
+      "PowerShell(New-Item -ItemType File -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Page\\\\Edit.vue\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Contact\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\ContactPage\")"
     ]
   }
 }

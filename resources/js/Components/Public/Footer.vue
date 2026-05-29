@@ -1,5 +1,47 @@
 <script setup>
+import { computed } from "vue";
+import { usePage } from "@inertiajs/vue3";
+
 const currentYear = new Date().getFullYear();
+
+const settings = computed(() => usePage().props.site_settings ?? {});
+
+const phoneHref = computed(() => {
+    const p = settings.value.phone;
+    return p ? `tel:${p.replace(/[\s\-\(\)]/g, "")}` : null;
+});
+
+const waMessage =
+    "Halo, saya ingin berkonsultasi mengenai kebutuhan forklift untuk bisnis saya. Mohon bantuannya.";
+const waHref = computed(() => {
+    const wa = settings.value.whatsapp;
+    return wa
+        ? `https://wa.me/${wa}?text=${encodeURIComponent(waMessage)}`
+        : "#inquiry";
+});
+
+const fbHref = computed(() =>
+    settings.value.facebook
+        ? `https://facebook.com/${settings.value.facebook}`
+        : null,
+);
+const igHref = computed(() =>
+    settings.value.instagram
+        ? `https://instagram.com/${settings.value.instagram}`
+        : null,
+);
+const ytHref = computed(() =>
+    settings.value.youtube ? settings.value.youtube : null,
+);
+const ttHref = computed(() =>
+    settings.value.tiktok
+        ? `https://tiktok.com/@${settings.value.tiktok}`
+        : null,
+);
+
+const hasSocial = computed(
+    () => fbHref.value || igHref.value || ytHref.value || ttHref.value,
+);
 
 const productLinks = [
     { label: "Forklift Baru", href: "#" },
@@ -46,11 +88,13 @@ const infoLinks = [
                         <p
                             class="md:text-xl text-slate-500 leading-relaxed mb-5"
                         >
-                            Dapatkan rekomendasi solusi material handling
-                            terbaik untuk bisnis Anda.
+                            Tim kami siap memberikan rekomendasi unit sesuai
+                            kebutuhan operasional bisnis Anda
                         </p>
                         <a
-                            href="#inquiry"
+                            :href="waHref"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             class="inline-block border md:border-2 border-orange-600 text-orange-600 md:text-xl font-semibold px-5 py-2.5 hover:bg-orange-600 hover:text-white transition-colors duration-200"
                         >
                             Hubungi Kami
@@ -62,9 +106,12 @@ const infoLinks = [
                         <h4 class="md:text-2xl font-bold text-slate-900 mb-5">
                             Ikuti Kami
                         </h4>
-                        <div class="flex items-center gap-2.5">
+                        <div v-if="hasSocial" class="flex items-center gap-2.5">
                             <a
-                                href="#"
+                                v-if="fbHref"
+                                :href="fbHref"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label="Facebook"
                                 class="w-9 h-9 rounded-full bg-gray-800 hover:bg-orange-600 flex items-center justify-center transition-colors duration-200"
                             >
@@ -79,7 +126,10 @@ const infoLinks = [
                                 </svg>
                             </a>
                             <a
-                                href="#"
+                                v-if="ytHref"
+                                :href="ytHref"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label="YouTube"
                                 class="w-9 h-9 rounded-full bg-gray-800 hover:bg-orange-600 flex items-center justify-center transition-colors duration-200"
                             >
@@ -94,7 +144,10 @@ const infoLinks = [
                                 </svg>
                             </a>
                             <a
-                                href="#"
+                                v-if="igHref"
+                                :href="igHref"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label="Instagram"
                                 class="w-9 h-9 rounded-full bg-gray-800 hover:bg-orange-600 flex items-center justify-center transition-colors duration-200"
                             >
@@ -108,7 +161,26 @@ const infoLinks = [
                                     />
                                 </svg>
                             </a>
+                            <a
+                                v-if="ttHref"
+                                :href="ttHref"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="TikTok"
+                                class="w-9 h-9 rounded-full bg-gray-800 hover:bg-orange-600 flex items-center justify-center transition-colors duration-200"
+                            >
+                                <svg
+                                    class="w-4 h-4 text-white"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"
+                                    />
+                                </svg>
+                            </a>
                         </div>
+                        <p v-else class="md:text-xl text-slate-400 italic">—</p>
                     </div>
 
                     <!-- Col 3: Jam Operasional -->
@@ -141,19 +213,15 @@ const infoLinks = [
                         <h4 class="md:text-2xl font-bold text-slate-900 mb-5">
                             Kontak
                         </h4>
-                        <p class="md:text-xl font-bold text-slate-900">
-                            PT. Distributor Forklift Indonesia
-                        </p>
-                        <p class="md:text-xl font-bold text-slate-900 mb-1">
-                            Jl. Industri Raya No. 123
-                        </p>
-                        <p class="md:text-xl text-slate-500">Jakarta Timur</p>
-                        <p class="md:text-xl text-slate-500">DKI Jakarta</p>
-                        <p class="md:text-xl text-slate-500 mb-3">
-                            Indonesia 13000
+                        <p
+                            v-if="settings.address"
+                            class="md:text-xl text-slate-500 leading-relaxed mb-3 whitespace-pre-line"
+                        >
+                            {{ settings.address }}
                         </p>
                         <a
-                            href="tel:+6221000000"
+                            v-if="phoneHref"
+                            :href="phoneHref"
                             class="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 md:text-xl font-medium transition-colors"
                         >
                             <svg
@@ -169,11 +237,8 @@ const infoLinks = [
                                     d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                                 />
                             </svg>
-                            +62 21 000 0000
+                            {{ settings.phone }}
                         </a>
-                        <p class="md:text-xl text-slate-400 mt-1">
-                            info@distributorforklift.com
-                        </p>
                     </div>
                 </div>
             </div>
@@ -183,7 +248,6 @@ const infoLinks = [
         <div class="bg-white border-t border-gray-100 py-12">
             <div class="max-w-screen-xl mx-auto px-4">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-10">
-                    <!-- Produk -->
                     <div>
                         <h4 class="md:text-2xl font-bold text-slate-900 mb-4">
                             Produk
@@ -199,8 +263,6 @@ const infoLinks = [
                             </li>
                         </ul>
                     </div>
-
-                    <!-- Layanan -->
                     <div>
                         <h4 class="md:text-2xl font-bold text-slate-900 mb-4">
                             Layanan
@@ -216,8 +278,6 @@ const infoLinks = [
                             </li>
                         </ul>
                     </div>
-
-                    <!-- Perusahaan -->
                     <div>
                         <h4 class="md:text-2xl font-bold text-slate-900 mb-4">
                             Perusahaan
@@ -233,8 +293,6 @@ const infoLinks = [
                             </li>
                         </ul>
                     </div>
-
-                    <!-- Informasi -->
                     <div>
                         <h4 class="md:text-2xl font-bold text-slate-900 mb-4">
                             Informasi

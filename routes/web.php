@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\Admin\HeroSliderController;
 use App\Http\Controllers\Admin\HomepageAboutController;
+use App\Http\Controllers\Admin\ContactPageController as AdminContactPageController;
+use App\Http\Controllers\Admin\InquirySettingController;
 use App\Http\Controllers\Admin\NavItemController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\SiteSettingController;
+use App\Http\Controllers\Public\ContactPageController;
 use App\Http\Controllers\Public\NewsController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\ProfileController;
@@ -39,6 +43,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::get('/kontak', [ContactPageController::class, 'show'])->name('contact.show');
 Route::get('/berita', [NewsController::class, 'index'])->name('news.index');
 Route::get('/berita/{slug}', [NewsController::class, 'show'])->name('news.show');
 
@@ -78,6 +83,18 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::resource('pages', AdminPageController::class)
         ->names('admin.pages')
         ->except(['show']);
+
+    // Contact page (singleton)
+    Route::get('contact', [AdminContactPageController::class, 'edit'])->name('admin.contact.edit');
+    Route::put('contact', [AdminContactPageController::class, 'update'])->name('admin.contact.update');
+
+    // Site settings
+    Route::get('settings', [SiteSettingController::class, 'edit'])->name('admin.settings.edit');
+    Route::put('settings', [SiteSettingController::class, 'update'])->name('admin.settings.update');
+
+    // Inquiry section settings
+    Route::get('inquiry', [InquirySettingController::class, 'edit'])->name('admin.inquiry.edit');
+    Route::put('inquiry', [InquirySettingController::class, 'update'])->name('admin.inquiry.update');
 
     // Navigation editor (hidden — not in sidebar)
     Route::get('navigation', [NavItemController::class, 'index'])->name('admin.navigation.index');

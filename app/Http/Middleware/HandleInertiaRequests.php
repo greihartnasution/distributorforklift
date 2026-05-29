@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\InquirySetting;
 use App\Models\NavItem;
 use App\Models\Page;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,6 +38,10 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'site_settings' => fn () => SiteSetting::first() ?? (object)[],
+
+            'inquiry_settings' => fn () => InquirySetting::first() ?? (object)[],
+
             'nav_pages' => fn () => Page::where('is_published', true)
                 ->where('show_in_nav', true)
                 ->orderBy('nav_group')->orderBy('nav_sub')->orderBy('nav_label')

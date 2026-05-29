@@ -69,18 +69,15 @@
                     <article
                         v-for="article in news.data"
                         :key="article.id"
-                        class="group flex flex-col"
+                        class="group flex flex-col relative"
                     >
-                        <a
-                            :href="route('news.show', article.slug)"
-                            class="overflow-hidden mb-5 block"
-                        >
+                        <div class="overflow-hidden mb-5">
                             <img
                                 :src="article.image"
                                 :alt="article.title"
                                 class="w-full h-[286px] object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                        </a>
+                        </div>
                         <div class="flex items-center gap-2 mb-3">
                             <span
                                 class="md:text-xl font-bold text-orange-600 uppercase tracking-wider"
@@ -104,7 +101,7 @@
                         </p>
                         <a
                             :href="route('news.show', article.slug)"
-                            class="inline-flex items-center gap-1.5 md:text-xl font-semibold text-orange-600 hover:text-orange-700 transition-colors duration-200"
+                            class="inline-flex items-center gap-1.5 md:text-xl font-semibold text-orange-600 hover:text-orange-700 transition-colors duration-200 after:absolute after:inset-0"
                         >
                             Baca Selengkapnya
                             <svg

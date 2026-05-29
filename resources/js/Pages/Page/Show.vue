@@ -5,20 +5,29 @@
         <!-- ============================================================
              HERO SECTION — Split layout: 45% text | 55% image (non-slider)
         ============================================================ -->
-        <section class="relative w-full bg-white overflow-hidden hero-section border-b border-b-gray-100">
+        <section
+            class="relative w-full bg-white overflow-hidden hero-section border-b border-b-gray-100"
+        >
             <div class="w-full flex flex-col md:flex-row h-full">
                 <!-- Col Left -->
                 <div class="hero-left-col flex flex-col justify-center">
                     <div class="inline-flex items-center gap-2 mb-5">
                         <span class="w-6 h-0.5 bg-orange-600"></span>
-                        <span class="text-xs font-bold text-orange-600 uppercase tracking-widest">
+                        <span
+                            class="text-xs font-bold text-orange-600 uppercase tracking-widest"
+                        >
                             {{ page.label }}
                         </span>
                     </div>
-                    <h1 class="text-3xl lg:text-4xl xl:text-[2.6rem] font-bold text-slate-900 leading-tight mb-4">
+                    <h1
+                        class="text-3xl lg:text-4xl xl:text-[2.6rem] font-bold text-slate-900 leading-tight mb-4"
+                    >
                         {{ page.title }}
                     </h1>
-                    <p v-if="page.subtitle" class="lg:text-2xl text-slate-500 leading-relaxed mb-8">
+                    <p
+                        v-if="page.subtitle"
+                        class="lg:text-2xl text-slate-500 leading-relaxed mb-8"
+                    >
                         {{ page.subtitle }}
                     </p>
                     <div v-if="page.cta_text">
@@ -27,15 +36,27 @@
                             class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white md:text-xl font-bold px-6 py-3 transition-colors duration-200"
                         >
                             {{ page.cta_text }}
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2.5"
+                                    d="M9 5l7 7-7 7"
+                                />
                             </svg>
                         </a>
                     </div>
                 </div>
 
                 <!-- Col Right -->
-                <div class="hero-right-col overflow-hidden bg-gray-100 relative">
+                <div
+                    class="hero-right-col overflow-hidden bg-gray-100 relative"
+                >
                     <img
                         v-if="page.image"
                         :src="page.image"
@@ -46,9 +67,18 @@
                         v-else
                         class="w-full h-full flex items-center justify-center"
                     >
-                        <svg class="w-16 h-16 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                            class="w-16 h-16 text-gray-200"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
                         </svg>
                     </div>
                 </div>
@@ -60,7 +90,9 @@
         ============================================================ -->
         <section class="bg-white pt-14 pb-20">
             <div class="max-w-screen-xl mx-auto px-4">
-                <h2 class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 leading-tight md:leading-[60px] lg:leading-[68px] max-w-4xl">
+                <h2
+                    class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 leading-tight md:leading-[60px] lg:leading-[68px] max-w-4xl"
+                >
                     {{ page.heading }}
                 </h2>
             </div>
@@ -75,78 +107,15 @@
             </div>
         </section>
 
-        <!-- ============================================================
-             INQUIRY / CONTACT FORM SECTION
-        ============================================================ -->
-        <section v-if="page.show_inquiry" id="inquiry" style="background-color: #f2f2f2" class="py-20">
-            <div class="max-w-screen-xl mx-auto px-4 lg:px-8">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-                    <!-- Left: Info -->
-                    <div>
-                        <h2 class="text-xl md:text-3xl font-black text-slate-900 leading-tight mb-5">
-                            Kami siap membantu Anda.
-                        </h2>
-                        <p class="text-slate-500 leading-relaxed mb-10 md:text-xl">
-                            Apakah Anda memiliki pertanyaan atau membutuhkan
-                            saran personal? Tim ahli kami siap membantu Anda
-                            menemukan solusi yang tepat — secara individual dan
-                            cepat.
-                        </p>
-
-                        <!-- CTA Phone -->
-                        <h3 class="text-lg md:text-3xl font-black text-slate-900 mb-1">
-                            Hubungi konsultan kami
-                        </h3>
-                        <p class="md:text-xl text-slate-500 mb-4">
-                            Siap membantu Anda — Senin hingga Jumat
-                        </p>
-                        <a
-                            href="tel:+6221000000"
-                            class="inline-flex items-center gap-3 bg-orange-600 hover:bg-orange-700 text-white md:text-xl font-bold px-6 py-3 transition-colors duration-200 mb-12"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            +62 21 000 0000
-                        </a>
-
-                        <!-- Process steps -->
-                        <h3 class="text-lg md:text-3xl font-black text-slate-900 mb-4">
-                            Apa yang terjadi setelah pengiriman?
-                        </h3>
-                        <ol class="space-y-2.5">
-                            <li class="md:text-xl text-slate-500 italic">
-                                1. Anda akan menerima konfirmasi otomatis melalui email
-                            </li>
-                            <li class="md:text-xl text-slate-500 italic">
-                                2. Permintaan Anda akan ditinjau oleh tim ahli kami
-                            </li>
-                            <li class="md:text-xl text-slate-500 italic">
-                                3. Anda akan mendapat respons personal dalam 1×24 jam kerja
-                            </li>
-                        </ol>
-                    </div>
-
-                    <!-- Right: Form -->
-                    <div class="bg-white p-5 sm:p-8 lg:p-10">
-                        <h3 class="text-xl md:text-3xl font-black text-slate-900 mb-5">
-                            Gunakan formulir kontak
-                        </h3>
-                        <p class="md:text-xl text-slate-400 mb-10">
-                            Tulis kepada kami — kami akan segera menghubungi Anda
-                        </p>
-                        <InquiryForm whatsapp-number="6221000000" />
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- INQUIRY / CONTACT FORM SECTION -->
+        <InquirySection v-if="page.show_inquiry" />
     </PublicLayout>
 </template>
 
 <script setup>
 import { Head } from "@inertiajs/vue3";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
-import InquiryForm from "@/Components/Public/InquiryForm.vue";
+import InquirySection from "@/Components/Public/InquirySection.vue";
 
 defineProps({
     page: {
@@ -154,11 +123,13 @@ defineProps({
         default: () => ({
             title: "Tentang Kami",
             label: "Perusahaan",
-            subtitle: "Mitra terpercaya dalam solusi material handling industri sejak 2004.",
+            subtitle:
+                "Mitra terpercaya dalam solusi material handling industri sejak 2004.",
             image: "https://picsum.photos/seed/page-hero/1200/600",
             cta_text: "Hubungi Kami",
             cta_url: "/#inquiry",
-            heading: "Lebih dari dua dekade menggerakkan industri Indonesia dengan solusi forklift terdepan.",
+            heading:
+                "Lebih dari dua dekade menggerakkan industri Indonesia dengan solusi forklift terdepan.",
             show_inquiry: true,
             content: `
                 <p>Kami adalah distributor forklift terkemuka di Indonesia yang telah melayani berbagai sektor industri selama lebih dari 20 tahun. Dengan portofolio produk dari merek-merek global terpercaya, kami hadir memberikan solusi material handling yang tepat untuk setiap kebutuhan operasional bisnis Anda.</p>

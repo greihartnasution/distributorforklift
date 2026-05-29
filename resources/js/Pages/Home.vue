@@ -306,7 +306,7 @@
                     <article
                         v-for="article in news"
                         :key="article.title"
-                        class="group flex flex-col"
+                        class="group flex flex-col relative"
                     >
                         <div class="overflow-hidden mb-5">
                             <img
@@ -337,7 +337,7 @@
                         </p>
                         <a
                             :href="route('news.show', article.slug)"
-                            class="inline-flex items-center gap-1.5 md:text-xl font-semibold text-orange-600 hover:text-orange-700 transition-colors duration-200"
+                            class="inline-flex items-center gap-1.5 md:text-xl font-semibold text-orange-600 hover:text-orange-700 transition-colors duration-200 after:absolute after:inset-0"
                         >
                             Baca Selengkapnya
                             <svg
@@ -463,104 +463,15 @@
             </div>
         </section>
 
-        <!-- ============================================================
-         INQUIRY / CONTACT FORM SECTION
-    ============================================================ -->
-        <section id="inquiry" style="background-color: #f2f2f2" class="py-20">
-            <div class="max-w-screen-xl mx-auto px-4 lg:px-8">
-                <div
-                    class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start"
-                >
-                    <!-- Left: Info -->
-                    <div>
-                        <h2
-                            class="text-xl md:text-3xl font-black text-slate-900 leading-tight mb-5"
-                        >
-                            Kami siap membantu Anda.
-                        </h2>
-                        <p
-                            class="text-slate-500 leading-relaxed mb-10 md:text-xl"
-                        >
-                            Apakah Anda memiliki pertanyaan atau membutuhkan
-                            saran personal? Tim ahli kami siap membantu Anda
-                            menemukan solusi yang tepat — secara individual dan
-                            cepat.
-                        </p>
-
-                        <!-- CTA Phone -->
-                        <h3
-                            class="text-lg md:text-3xl font-black text-slate-900 mb-1"
-                        >
-                            Hubungi konsultan kami
-                        </h3>
-                        <p class="md:text-xl text-slate-500 mb-4">
-                            Siap membantu Anda — Senin hingga Jumat
-                        </p>
-                        <a
-                            href="tel:+6221000000"
-                            class="inline-flex items-center gap-3 bg-orange-600 hover:bg-orange-700 text-white md:text-xl font-bold px-6 py-3 transition-colors duration-200 mb-12"
-                        >
-                            <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                />
-                            </svg>
-                            +62 21 000 0000
-                        </a>
-
-                        <!-- Process steps -->
-                        <h3
-                            class="text-lg md:text-3xl font-black text-slate-900 mb-4"
-                        >
-                            Apa yang terjadi setelah pengiriman?
-                        </h3>
-                        <ol class="space-y-2.5">
-                            <li class="md:text-xl text-slate-500 italic">
-                                1. Anda akan menerima konfirmasi otomatis
-                                melalui email
-                            </li>
-                            <li class="md:text-xl text-slate-500 italic">
-                                2. Permintaan Anda akan ditinjau oleh tim ahli
-                                kami
-                            </li>
-                            <li class="md:text-xl text-slate-500 italic">
-                                3. Anda akan mendapat respons personal dalam
-                                1×24 jam kerja
-                            </li>
-                        </ol>
-                    </div>
-
-                    <!-- Right: Form -->
-                    <div class="bg-white p-5 sm:p-8 lg:p-10">
-                        <h3
-                            class="text-xl md:text-3xl font-black text-slate-900 mb-5"
-                        >
-                            Gunakan formulir kontak
-                        </h3>
-                        <p class="md:text-xl text-slate-400 mb-10">
-                            Tulis kepada kami — kami akan segera menghubungi
-                            Anda
-                        </p>
-                        <InquiryForm whatsapp-number="6221000000" />
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- INQUIRY / CONTACT FORM SECTION -->
+        <InquirySection />
     </PublicLayout>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
-import InquiryForm from "@/Components/Public/InquiryForm.vue";
+import InquirySection from "@/Components/Public/InquirySection.vue";
 
 const props = defineProps({
     sliders: { type: Array, default: () => [] },
