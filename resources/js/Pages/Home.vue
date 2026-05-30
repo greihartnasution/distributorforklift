@@ -154,8 +154,16 @@
     ============================================================ -->
         <section v-if="row1Cards.length" class="bg-white pb-12">
             <div class="max-w-screen-xl mx-auto px-4">
-                <div class="grid grid-cols-1 gap-8"
-                    :class="row1Cards.length >= 3 ? 'md:grid-cols-3' : row1Cards.length === 2 ? 'md:grid-cols-2' : ''">
+                <div
+                    class="grid grid-cols-1 gap-8"
+                    :class="
+                        row1Cards.length >= 3
+                            ? 'md:grid-cols-3'
+                            : row1Cards.length === 2
+                              ? 'md:grid-cols-2'
+                              : ''
+                    "
+                >
                     <component
                         :is="card.href ? 'a' : 'div'"
                         v-for="(card, i) in row1Cards"
@@ -191,34 +199,71 @@
         <!-- ============================================================
          PRODUCT CARDS ROW 2 — Pattern background, white cards floating
     ============================================================ -->
-        <section v-if="row2Cards.length"
-            style="background: #f0f0f0 url('/static/bg-pattern.jpg') 50% 50%; background-size: cover;"
+        <section
+            v-if="row2Cards.length"
+            style="
+                background: #f0f0f0 url(&quot;/static/bg-pattern.jpg&quot;) 50%
+                    50%;
+                background-size: cover;
+            "
             class="py-12"
         >
             <div class="max-w-screen-xl mx-auto">
-                <div class="grid grid-cols-1 gap-8 px-4"
-                    :class="row2Cards.length >= 3 ? 'md:grid-cols-4' : row2Cards.length === 2 ? 'md:grid-cols-3' : ''">
+                <div
+                    class="grid grid-cols-1 gap-8 px-4"
+                    :class="
+                        row2Cards.length >= 3
+                            ? 'md:grid-cols-4'
+                            : row2Cards.length === 2
+                              ? 'md:grid-cols-3'
+                              : ''
+                    "
+                >
                     <component
                         :is="card.href ? 'a' : 'div'"
                         v-for="(card, i) in row2Cards"
                         :key="i"
                         :href="card.href || undefined"
                         class="group bg-white flex flex-col"
-                        :class="[card.href ? 'cursor-pointer' : '', row2Cards.length >= 2 && i === 0 ? 'md:col-span-2' : '']"
+                        :class="[
+                            card.href ? 'cursor-pointer' : '',
+                            row2Cards.length >= 2 && i === 0
+                                ? 'md:col-span-2'
+                                : '',
+                        ]"
                     >
-                        <div class="flex-1 min-h-[180px]"
-                            :class="row2Cards.length >= 2 && i === 0 ? 'p-6 md:p-8' : 'px-7 pt-7 pb-5'">
-                            <h3 class="text-xl md:text-3xl font-black text-slate-900 group-hover:text-orange-600 leading-tight mb-10 transition-colors duration-200">
+                        <div
+                            class="flex-1 min-h-[180px]"
+                            :class="
+                                row2Cards.length >= 2 && i === 0
+                                    ? 'p-6 md:p-8'
+                                    : 'px-7 pt-7 pb-5'
+                            "
+                        >
+                            <h3
+                                class="text-xl md:text-3xl font-black text-slate-900 group-hover:text-orange-600 leading-tight mb-10 transition-colors duration-200"
+                            >
                                 {{ card.title }}
                             </h3>
-                            <p class="md:text-xl text-gray-400 leading-relaxed mb-8 md:mb-0">
+                            <p
+                                class="md:text-xl text-gray-400 leading-relaxed mb-8 md:mb-0"
+                            >
                                 {{ card.description }}
                             </p>
                         </div>
-                        <div class="overflow-hidden"
-                            :class="row2Cards.length >= 2 && i === 0 ? 'h-[230px] md:h-[360px]' : 'h-[230px] md:h-[169px]'">
-                            <img :src="card.image" :alt="card.title"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div
+                            class="overflow-hidden"
+                            :class="
+                                row2Cards.length >= 2 && i === 0
+                                    ? 'h-[230px] md:h-[360px]'
+                                    : 'h-[230px] md:h-[169px]'
+                            "
+                        >
+                            <img
+                                :src="card.image"
+                                :alt="card.title"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
                         </div>
                     </component>
                 </div>
@@ -230,8 +275,10 @@
     ============================================================ -->
         <section v-if="row3Cards.length" class="bg-white py-12">
             <div class="max-w-screen-xl mx-auto px-4">
-                <div class="grid grid-cols-1 gap-8 md:gap-y-16"
-                    :class="row3Cards.length >= 2 ? 'md:grid-cols-2' : ''">
+                <div
+                    class="grid grid-cols-1 gap-8 md:gap-y-16"
+                    :class="row3Cards.length >= 2 ? 'md:grid-cols-2' : ''"
+                >
                     <component
                         :is="card.href ? 'a' : 'div'"
                         v-for="(card, i) in row3Cards"
@@ -443,70 +490,147 @@
         <!-- ============================================================
          TESTIMONI SECTION — Slider
     ============================================================ -->
-        <section v-if="props.testimonials.length" class="py-20 overflow-hidden" style="background-color: #302e2c">
+        <section
+            v-if="props.testimonials.length"
+            class="py-20 overflow-hidden"
+            style="background-color: #302e2c"
+        >
             <div class="max-w-screen-xl mx-auto px-4">
-
                 <!-- Label -->
                 <div class="flex items-center gap-3 mb-12 justify-center">
                     <span class="w-8 h-0.5 bg-orange-600"></span>
-                    <span class="text-xs font-bold text-orange-500 uppercase tracking-widest">Apa Kata Klien Kami</span>
+                    <span
+                        class="text-xs font-bold text-orange-500 uppercase tracking-widest"
+                        >Apa Kata Klien Kami</span
+                    >
                     <span class="w-8 h-0.5 bg-orange-600"></span>
                 </div>
 
                 <!-- Slider -->
                 <div class="relative">
                     <!-- Prev -->
-                    <button @click="prevTestimoni"
-                        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors duration-200 -translate-x-2 md:-translate-x-6">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
+                    <button
+                        @click="prevTestimoni"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors duration-200 -translate-x-2 md:-translate-x-6"
+                    >
+                        <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M15 19l-7-7 7-7"
+                            />
                         </svg>
                     </button>
 
                     <!-- Next -->
-                    <button @click="nextTestimoni"
-                        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors duration-200 translate-x-2 md:translate-x-6">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+                    <button
+                        @click="nextTestimoni"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors duration-200 translate-x-2 md:translate-x-6"
+                    >
+                        <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M9 5l7 7-7 7"
+                            />
                         </svg>
                     </button>
 
                     <!-- Slide -->
                     <div class="px-10 md:px-20">
                         <transition name="testi-fade" mode="out-in">
-                            <div :key="currentTestimoni" class="text-center max-w-3xl mx-auto">
+                            <div
+                                :key="currentTestimoni"
+                                class="text-center max-w-3xl mx-auto"
+                            >
                                 <!-- Quote mark -->
-                                <div class="text-orange-600 text-[80px] leading-none font-serif mb-2 select-none">"</div>
+                                <div
+                                    class="text-orange-600 text-[80px] leading-none font-serif mb-2 select-none"
+                                >
+                                    "
+                                </div>
 
                                 <!-- Quote text -->
-                                <p class="text-xl md:text-2xl lg:text-3xl text-white font-light leading-relaxed mb-10">
+                                <p
+                                    class="text-xl md:text-2xl lg:text-3xl text-white font-light leading-relaxed mb-10"
+                                >
                                     {{ testimonials[currentTestimoni].quote }}
                                 </p>
 
                                 <!-- Author -->
                                 <div class="flex flex-col items-center gap-2">
                                     <!-- Avatar -->
-                                    <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-orange-600 mb-2 shrink-0">
+                                    <div
+                                        class="w-16 h-16 rounded-full overflow-hidden border-2 border-orange-600 mb-2 shrink-0"
+                                    >
                                         <img
-                                            v-if="testimonials[currentTestimoni].image"
-                                            :src="testimonials[currentTestimoni].image"
-                                            :alt="testimonials[currentTestimoni].name"
+                                            v-if="
+                                                testimonials[currentTestimoni]
+                                                    .image
+                                            "
+                                            :src="
+                                                testimonials[currentTestimoni]
+                                                    .image
+                                            "
+                                            :alt="
+                                                testimonials[currentTestimoni]
+                                                    .name
+                                            "
                                             class="w-full h-full object-cover"
                                         />
-                                        <div v-else class="w-full h-full bg-slate-700 flex items-center justify-center">
-                                            <svg class="w-7 h-7 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        <div
+                                            v-else
+                                            class="w-full h-full bg-slate-700 flex items-center justify-center"
+                                        >
+                                            <svg
+                                                class="w-7 h-7 text-slate-500"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="1.5"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                />
                                             </svg>
                                         </div>
                                     </div>
-                                    <span class="text-base md:text-lg font-bold text-white">
-                                        {{ testimonials[currentTestimoni].name }}
+                                    <span
+                                        class="text-base md:text-lg font-bold text-white"
+                                    >
+                                        {{
+                                            testimonials[currentTestimoni].name
+                                        }}
                                     </span>
-                                    <span class="text-sm md:text-base text-gray-400">
-                                        {{ testimonials[currentTestimoni].position }}
+                                    <span
+                                        class="text-sm md:text-base text-gray-400"
+                                    >
+                                        {{
+                                            testimonials[currentTestimoni]
+                                                .position
+                                        }}
                                     </span>
-                                    <span class="text-sm md:text-base text-orange-500 font-semibold">
-                                        {{ testimonials[currentTestimoni].company }}
+                                    <span
+                                        class="text-sm md:text-base text-orange-500 font-semibold"
+                                    >
+                                        {{
+                                            testimonials[currentTestimoni]
+                                                .company
+                                        }}
                                     </span>
                                 </div>
                             </div>
@@ -520,10 +644,104 @@
                             :key="i"
                             @click="currentTestimoni = i"
                             class="w-2 h-2 rounded-full transition-all duration-200"
-                            :class="currentTestimoni === i ? 'bg-orange-500 w-6' : 'bg-gray-600 hover:bg-gray-400'"
+                            :class="
+                                currentTestimoni === i
+                                    ? 'bg-orange-500 w-6'
+                                    : 'bg-gray-600 hover:bg-gray-400'
+                            "
                         ></button>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+         KLIEN SECTION — Swiper autoplay loop
+    ============================================================ -->
+        <section
+            v-if="props.clients.length"
+            class="py-14 bg-white border-t border-gray-100 overflow-hidden"
+        >
+            <div class="max-w-screen-xl mx-auto px-4 mb-10">
+                <div class="flex items-center gap-2 mb-3 justify-center">
+                    <span class="w-8 h-0.5 bg-orange-600"></span>
+                    <span
+                        class="text-xs font-bold text-orange-600 uppercase tracking-widest"
+                        >Klien Kami</span
+                    >
+                    <span class="w-8 h-0.5 bg-orange-600"></span>
+                </div>
+                <h2
+                    class="text-3xl md:text-4xl font-black text-slate-900 text-center"
+                >
+                    Dipercaya Oleh
+                </h2>
+            </div>
+
+            <div class="relative">
+                <!-- Gradient fade left -->
+                <div
+                    class="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+                    style="
+                        background: linear-gradient(
+                            to right,
+                            white 30%,
+                            transparent
+                        );
+                    "
+                ></div>
+                <!-- Gradient fade right -->
+                <div
+                    class="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+                    style="
+                        background: linear-gradient(
+                            to left,
+                            white 30%,
+                            transparent
+                        );
+                    "
+                ></div>
+
+                <Swiper
+                    :modules="swiperModules"
+                    :slides-per-view="2"
+                    :space-between="32"
+                    :loop="true"
+                    :autoplay="{
+                        delay: 2500,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
+                    }"
+                    :speed="800"
+                    :breakpoints="{
+                        640: { slidesPerView: 3, spaceBetween: 32 },
+                        1024: { slidesPerView: 5, spaceBetween: 48 },
+                    }"
+                >
+                    <SwiperSlide v-for="(client, i) in loopClients" :key="i">
+                        <component
+                            :is="client.website ? 'a' : 'div'"
+                            :href="client.website || undefined"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center justify-center h-24 px-8 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-default"
+                            :class="{ 'cursor-pointer': client.website }"
+                        >
+                            <img
+                                v-if="client.logo"
+                                :src="client.logo"
+                                :alt="client.name"
+                                class="max-h-16 max-w-full object-contain"
+                            />
+                            <span
+                                v-else
+                                class="text-sm font-bold text-slate-600 text-center leading-snug px-2"
+                            >
+                                {{ client.name }}
+                            </span>
+                        </component>
+                    </SwiperSlide>
+                </Swiper>
             </div>
         </section>
 
@@ -536,16 +754,23 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import InquirySection from "@/Components/Public/InquirySection.vue";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
+
+const swiperModules = [Autoplay];
 
 const props = defineProps({
-    sliders:  { type: Array,  default: () => [] },
-    about:    { type: Object, default: null },
-    news:     { type: Array,  default: () => [] },
+    sliders: { type: Array, default: () => [] },
+    about: { type: Object, default: null },
+    news: { type: Array, default: () => [] },
     testimonials: { type: Array, default: () => [] },
+    clients: { type: Array, default: () => [] },
     showcase: {
         type: Object,
         default: () => ({
-            heading: 'Distributor Forklift terdepan dalam solusi material handling industri di Indonesia',
+            heading:
+                "Distributor Forklift terdepan dalam solusi material handling industri di Indonesia",
             row1: [{}, {}, {}],
             row2: [{}, {}, {}],
             row3: [{}, {}, {}],
@@ -554,9 +779,22 @@ const props = defineProps({
 });
 
 // ── Showcase filtered cards ──────────────────────────────────────
-const row1Cards = computed(() => (props.showcase.row1 ?? []).filter(c => c.title || c.image));
-const row2Cards = computed(() => (props.showcase.row2 ?? []).filter(c => c.title || c.image));
-const row3Cards = computed(() => (props.showcase.row3 ?? []).filter(c => c.title || c.image));
+// Duplicate clients agar Swiper loop cukup slide (min 4x jumlah slidesPerView)
+const loopClients = computed(() => {
+    if (!props.clients.length) return [];
+    const times = Math.ceil(20 / props.clients.length);
+    return Array.from({ length: times }, () => props.clients).flat();
+});
+
+const row1Cards = computed(() =>
+    (props.showcase.row1 ?? []).filter((c) => c.title || c.image),
+);
+const row2Cards = computed(() =>
+    (props.showcase.row2 ?? []).filter((c) => c.title || c.image),
+);
+const row3Cards = computed(() =>
+    (props.showcase.row3 ?? []).filter((c) => c.title || c.image),
+);
 
 // ── Hero Slider ──────────────────────────────────────────────────
 const currentSlide = ref(0);
@@ -594,13 +832,15 @@ const currentTestimoni = ref(0);
 let testimoniTimer = null;
 
 function nextTestimoni() {
-    currentTestimoni.value = (currentTestimoni.value + 1) % props.testimonials.length;
+    currentTestimoni.value =
+        (currentTestimoni.value + 1) % props.testimonials.length;
 }
 
 function prevTestimoni() {
-    currentTestimoni.value = (currentTestimoni.value - 1 + props.testimonials.length) % props.testimonials.length;
+    currentTestimoni.value =
+        (currentTestimoni.value - 1 + props.testimonials.length) %
+        props.testimonials.length;
 }
-
 
 // ── Solutions ────────────────────────────────────────────────────
 const solutions = [
@@ -625,7 +865,6 @@ const stats = [
     { value: "1200+", label: "Unit Terjual" },
     { value: "24/7", label: "Dukungan Teknis" },
 ];
-
 
 // ── Brands ───────────────────────────────────────────────────────
 const brands = ["TOYOTA", "KOMATSU", "LINDE", "HYSTER", "CROWN", "MITSUBISHI"];
@@ -673,7 +912,9 @@ const brands = ["TOYOTA", "KOMATSU", "LINDE", "HYSTER", "CROWN", "MITSUBISHI"];
 /* ── Testimoni transitions ───────────────────────────────── */
 .testi-fade-enter-active,
 .testi-fade-leave-active {
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    transition:
+        opacity 0.4s ease,
+        transform 0.4s ease;
 }
 .testi-fade-enter-from {
     opacity: 0;

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\HeroSliderController;
 use App\Http\Controllers\Admin\HomepageAboutController;
+use App\Http\Controllers\Admin\HomepageClientController;
 use App\Http\Controllers\Admin\HomepageShowcaseController;
 use App\Http\Controllers\Admin\HomepageTestimonialController;
 use App\Http\Controllers\Admin\ContactPageController as AdminContactPageController;
@@ -49,6 +50,15 @@ Route::get('/', function () {
             'image'    => $t->image ? '/storage/' . $t->image : null,
         ]);
 
+    $clients = \App\Models\HomepageClient::where('is_active', true)
+        ->orderBy('sort_order')->orderBy('id')
+        ->get()
+        ->map(fn ($c) => [
+            'name'    => $c->name,
+            'logo'    => $c->logo ? '/storage/' . $c->logo : null,
+            'website' => $c->website,
+        ]);
+
     $setting   = \App\Models\SiteSetting::first();
     $showcases = \App\Models\HomepageShowcase::all()->keyBy(fn ($s) => "{$s->row}_{$s->position}");
     $slot = fn ($r, $p) => [
@@ -59,10 +69,11 @@ Route::get('/', function () {
     ];
 
     return Inertia::render('Home', [
-        'sliders'  => $sliders,
-        'about'    => $about,
-        'news'     => $news,
+        'sliders'      => $sliders,
+        'about'        => $about,
+        'news'         => $news,
         'testimonials' => $testimonials,
+        'clients'      => $clients,
         'showcase' => [
             'heading' => $setting?->showcase_heading ?? 'Distributor Forklift terdepan dalam solusi material handling industri di Indonesia',
             'row1'    => [$slot(1,1), $slot(1,2), $slot(1,3)],
@@ -115,6 +126,10 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
         ->names('admin.homepage.testimonials')
         ->except(['show'])
         ->parameters(['testimonials' => 'testimonial']);
+    Route::resource('homepage/clients', HomepageClientController::class)
+        ->names('admin.homepage.clients')
+        ->except(['show'])
+        ->parameters(['clients' => 'client']);
 
     // News CRUD
     Route::resource('news', AdminNewsController::class)

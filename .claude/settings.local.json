@@ -34,7 +34,11 @@
       "PowerShell(New-Item -ItemType File -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Page\\\\Create.vue\")",
       "PowerShell(New-Item -ItemType File -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Page\\\\Edit.vue\")",
       "Bash(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Contact\")",
-      "Bash(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\ContactPage\")"
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\ContactPage\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\" install swiper --prefix \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\" 2>&1)",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command npm -ErrorAction SilentlyContinue)",
+      "PowerShell(& \"C:\\\\Users\\\\asus\\\\AppData\\\\Roaming\\\\npm\\\\pnpm.cmd\" add swiper --dir \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\")"
     ]
   }
 }
