@@ -440,6 +440,93 @@
             </div>
         </section>
 
+        <!-- ============================================================
+         TESTIMONI SECTION — Slider
+    ============================================================ -->
+        <section v-if="props.testimonials.length" class="py-20 overflow-hidden" style="background-color: #302e2c">
+            <div class="max-w-screen-xl mx-auto px-4">
+
+                <!-- Label -->
+                <div class="flex items-center gap-3 mb-12 justify-center">
+                    <span class="w-8 h-0.5 bg-orange-600"></span>
+                    <span class="text-xs font-bold text-orange-500 uppercase tracking-widest">Apa Kata Klien Kami</span>
+                    <span class="w-8 h-0.5 bg-orange-600"></span>
+                </div>
+
+                <!-- Slider -->
+                <div class="relative">
+                    <!-- Prev -->
+                    <button @click="prevTestimoni"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors duration-200 -translate-x-2 md:-translate-x-6">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Next -->
+                    <button @click="nextTestimoni"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-orange-500 transition-colors duration-200 translate-x-2 md:translate-x-6">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- Slide -->
+                    <div class="px-10 md:px-20">
+                        <transition name="testi-fade" mode="out-in">
+                            <div :key="currentTestimoni" class="text-center max-w-3xl mx-auto">
+                                <!-- Quote mark -->
+                                <div class="text-orange-600 text-[80px] leading-none font-serif mb-2 select-none">"</div>
+
+                                <!-- Quote text -->
+                                <p class="text-xl md:text-2xl lg:text-3xl text-white font-light leading-relaxed mb-10">
+                                    {{ testimonials[currentTestimoni].quote }}
+                                </p>
+
+                                <!-- Author -->
+                                <div class="flex flex-col items-center gap-2">
+                                    <!-- Avatar -->
+                                    <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-orange-600 mb-2 shrink-0">
+                                        <img
+                                            v-if="testimonials[currentTestimoni].image"
+                                            :src="testimonials[currentTestimoni].image"
+                                            :alt="testimonials[currentTestimoni].name"
+                                            class="w-full h-full object-cover"
+                                        />
+                                        <div v-else class="w-full h-full bg-slate-700 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <span class="text-base md:text-lg font-bold text-white">
+                                        {{ testimonials[currentTestimoni].name }}
+                                    </span>
+                                    <span class="text-sm md:text-base text-gray-400">
+                                        {{ testimonials[currentTestimoni].position }}
+                                    </span>
+                                    <span class="text-sm md:text-base text-orange-500 font-semibold">
+                                        {{ testimonials[currentTestimoni].company }}
+                                    </span>
+                                </div>
+                            </div>
+                        </transition>
+                    </div>
+
+                    <!-- Dots -->
+                    <div class="flex items-center justify-center gap-2 mt-10">
+                        <button
+                            v-for="(_, i) in testimonials"
+                            :key="i"
+                            @click="currentTestimoni = i"
+                            class="w-2 h-2 rounded-full transition-all duration-200"
+                            :class="currentTestimoni === i ? 'bg-orange-500 w-6' : 'bg-gray-600 hover:bg-gray-400'"
+                        ></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- INQUIRY / CONTACT FORM SECTION -->
         <InquirySection />
     </PublicLayout>
@@ -454,6 +541,7 @@ const props = defineProps({
     sliders:  { type: Array,  default: () => [] },
     about:    { type: Object, default: null },
     news:     { type: Array,  default: () => [] },
+    testimonials: { type: Array, default: () => [] },
     showcase: {
         type: Object,
         default: () => ({
@@ -492,11 +580,26 @@ function resetAutoplay() {
 
 onMounted(() => {
     autoplayTimer = setInterval(nextSlide, 5000);
+    testimoniTimer = setInterval(nextTestimoni, 6000);
 });
 
 onUnmounted(() => {
     clearInterval(autoplayTimer);
+    clearInterval(testimoniTimer);
 });
+
+// ── Testimonials ─────────────────────────────────────────────────
+
+const currentTestimoni = ref(0);
+let testimoniTimer = null;
+
+function nextTestimoni() {
+    currentTestimoni.value = (currentTestimoni.value + 1) % props.testimonials.length;
+}
+
+function prevTestimoni() {
+    currentTestimoni.value = (currentTestimoni.value - 1 + props.testimonials.length) % props.testimonials.length;
+}
 
 
 // ── Solutions ────────────────────────────────────────────────────
@@ -565,6 +668,20 @@ const brands = ["TOYOTA", "KOMATSU", "LINDE", "HYSTER", "CROWN", "MITSUBISHI"];
 }
 .about-long-desc :deep(em) {
     font-style: italic;
+}
+
+/* ── Testimoni transitions ───────────────────────────────── */
+.testi-fade-enter-active,
+.testi-fade-leave-active {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.testi-fade-enter-from {
+    opacity: 0;
+    transform: translateY(12px);
+}
+.testi-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-12px);
 }
 
 /* ── Hero transitions ─────────────────────────────────────── */

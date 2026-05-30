@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\HeroSliderController;
 use App\Http\Controllers\Admin\HomepageAboutController;
 use App\Http\Controllers\Admin\HomepageShowcaseController;
+use App\Http\Controllers\Admin\HomepageTestimonialController;
 use App\Http\Controllers\Admin\ContactPageController as AdminContactPageController;
 use App\Http\Controllers\Admin\InquirySettingController;
 use App\Http\Controllers\Admin\NavItemController;
@@ -37,6 +38,17 @@ Route::get('/', function () {
             'image'    => $n->image ? '/storage/' . $n->image : null,
         ]);
 
+    $testimonials = \App\Models\HomepageTestimonial::where('is_active', true)
+        ->orderBy('sort_order')->orderBy('id')
+        ->get()
+        ->map(fn ($t) => [
+            'name'     => $t->name,
+            'position' => $t->position,
+            'company'  => $t->company,
+            'quote'    => $t->quote,
+            'image'    => $t->image ? '/storage/' . $t->image : null,
+        ]);
+
     $setting   = \App\Models\SiteSetting::first();
     $showcases = \App\Models\HomepageShowcase::all()->keyBy(fn ($s) => "{$s->row}_{$s->position}");
     $slot = fn ($r, $p) => [
@@ -50,6 +62,7 @@ Route::get('/', function () {
         'sliders'  => $sliders,
         'about'    => $about,
         'news'     => $news,
+        'testimonials' => $testimonials,
         'showcase' => [
             'heading' => $setting?->showcase_heading ?? 'Distributor Forklift terdepan dalam solusi material handling industri di Indonesia',
             'row1'    => [$slot(1,1), $slot(1,2), $slot(1,3)],
@@ -98,6 +111,10 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::put('homepage/tentang', [HomepageAboutController::class, 'update'])->name('admin.homepage.tentang.update');
     Route::get('homepage/showcase', [HomepageShowcaseController::class, 'edit'])->name('admin.homepage.showcase');
     Route::put('homepage/showcase', [HomepageShowcaseController::class, 'update'])->name('admin.homepage.showcase.update');
+    Route::resource('homepage/testimonials', HomepageTestimonialController::class)
+        ->names('admin.homepage.testimonials')
+        ->except(['show'])
+        ->parameters(['testimonials' => 'testimonial']);
 
     // News CRUD
     Route::resource('news', AdminNewsController::class)
