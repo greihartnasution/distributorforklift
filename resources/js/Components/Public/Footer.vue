@@ -70,6 +70,16 @@ const infoLinks = [
     { label: "Syarat & Ketentuan", href: "#" },
     { label: "Hubungi Kami", href: "#" },
 ];
+
+const inquiry = computed(() => usePage().props.inquiry_settings ?? {});
+const consultantName    = computed(() => inquiry.value.consultant_name    || "");
+const consultantTitle   = computed(() => inquiry.value.consultant_title   || "");
+const consultantCompany = computed(() => inquiry.value.consultant_company || "");
+const consultantPhone   = computed(() => inquiry.value.consultant_phone   || "");
+const consultantEmail   = computed(() => inquiry.value.consultant_email   || "");
+const consultantPhoto   = computed(() =>
+    inquiry.value.consultant_photo ? '/storage/' + inquiry.value.consultant_photo : null
+);
 </script>
 
 <template>
@@ -239,6 +249,32 @@ const infoLinks = [
                             </svg>
                             {{ settings.phone }}
                         </a>
+
+                        <!-- Consultant Card -->
+                        <div v-if="consultantName" class="flex items-start gap-3 mt-6 pt-6 border-t border-gray-100">
+                            <div class="shrink-0">
+                                <img v-if="consultantPhoto" :src="consultantPhoto" :alt="consultantName"
+                                    class="w-12 h-12 rounded-full object-cover border border-gray-200" />
+                                <div v-else class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-slate-900">{{ consultantName }}</p>
+                                <p v-if="consultantTitle" class="text-xs text-slate-500">{{ consultantTitle }}</p>
+                                <p v-if="consultantCompany" class="text-xs text-slate-400 mb-2">{{ consultantCompany }}</p>
+                                <a v-if="consultantPhone" :href="`tel:${consultantPhone}`"
+                                    class="block text-xs text-slate-600 hover:text-orange-600 transition-colors">
+                                    {{ consultantPhone }}
+                                </a>
+                                <a v-if="consultantEmail" :href="`mailto:${consultantEmail}`"
+                                    class="block text-xs text-slate-600 hover:text-orange-600 transition-colors truncate">
+                                    {{ consultantEmail }}
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

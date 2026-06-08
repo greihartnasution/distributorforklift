@@ -1,14 +1,26 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { ref, computed, watch } from "vue";
 
 const props = defineProps({
-    product:    { type: Object, default: null },
-    categories: { type: Array, default: () => [] },
+    product:           { type: Object, default: null },
+    systemCategories:  { type: Array,  default: () => [] },
 });
 
 const isEdit = !!props.product;
+
+const selectedSystemId = ref(props.product?.system_category_id ?? "");
+
+const selectedSystem = computed(() =>
+    props.systemCategories.find((s) => s.id == selectedSystemId.value) ?? null
+);
+
+const availableSubs = computed(() => selectedSystem.value?.children ?? []);
+
+const selectedSub = computed(() =>
+    availableSubs.value.find((s) => s.id == form.product_category_id) ?? null
+);
 
 const form = useForm({
     product_category_id: props.product?.product_category_id ?? "",
@@ -20,6 +32,10 @@ const form = useForm({
     is_active:           props.product?.is_active           ?? true,
     image:               null,
     clear_image:         false,
+});
+
+watch(selectedSystemId, () => {
+    form.product_category_id = "";
 });
 
 const imagePreview = ref(props.product?.image_url ?? null);
@@ -98,13 +114,30 @@ function submit() {
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Informasi Produk</h2>
 
+                    <!-- Step 1: System kategori -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Kategori <span class="text-red-500">*</span></label>
-                        <select v-model="form.product_category_id" required
-                            class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400">
-                            <option value="">-- Pilih Kategori --</option>
-                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                                {{ cat.name }}
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                            Jenis Produk <span class="text-red-500">*</span>
+                        </label>
+                        <select v-model="selectedSystemId" required
+                            class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 bg-white">
+                            <option value="" disabled>-- Pilih jenis produk --</option>
+                            <option v-for="sys in systemCategories" :key="sys.id" :value="sys.id">
+                                {{ sys.name }} (/{{ sys.slug }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Step 2: Sub-kategori -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                            Sub-Kategori <span class="text-red-500">*</span>
+                        </label>
+                        <select v-model="form.product_category_id" required :disabled="!selectedSystemId"
+                            class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 bg-white disabled:bg-gray-50 disabled:text-slate-400 disabled:cursor-not-allowed">
+                            <option value="" disabled>{{ selectedSystemId ? '-- Pilih sub-kategori --' : '-- Pilih jenis produk dulu --' }}</option>
+                            <option v-for="sub in availableSubs" :key="sub.id" :value="sub.id">
+                                {{ sub.name }}
                             </option>
                         </select>
                         <p v-if="form.errors.product_category_id" class="text-xs text-red-500 mt-1">{{ form.errors.product_category_id }}</p>
@@ -121,7 +154,9 @@ function submit() {
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Slug URL</label>
                         <div class="flex items-center border border-gray-200 rounded overflow-hidden focus-within:border-orange-400 focus-within:ring-1 focus-within:ring-orange-400">
-                            <span class="bg-gray-50 border-r border-gray-200 px-3 py-2 text-xs text-slate-400 shrink-0">/produk/{kategori}/</span>
+                            <span class="bg-gray-50 border-r border-gray-200 px-3 py-2 text-xs text-slate-400 shrink-0">
+                                /{{ selectedSystem?.slug ?? '...' }}/{{ selectedSub?.slug ?? '...' }}/
+                            </span>
                             <input v-model="form.slug" type="text"
                                 class="flex-1 px-3 py-2 text-sm text-slate-800 focus:outline-none"
                                 placeholder="reach-truck-15-ton" />
@@ -212,15 +247,19 @@ function submit() {
                 </div>
 
                 <!-- Actions -->
-                <div class="flex items-center gap-3">
-                    <button type="submit" :disabled="form.processing"
-                        class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white text-sm font-bold px-6 py-2.5 rounded transition-colors">
-                        {{ form.processing ? "Menyimpan..." : (isEdit ? "Perbarui" : "Simpan") }}
-                    </button>
+                <div class="flex items-center justify-end gap-8 pb-2">
                     <Link :href="route('admin.products.index')"
-                        class="text-sm text-slate-500 hover:text-slate-700 px-4 py-2.5 transition-colors">
+                        class="text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">
                         Batal
                     </Link>
+                    <button type="submit" :disabled="form.processing"
+                        class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-bold px-6 py-2.5 transition-colors duration-150">
+                        <svg v-if="form.processing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        {{ form.processing ? "Menyimpan..." : (isEdit ? "Perbarui Produk" : "Simpan Produk") }}
+                    </button>
                 </div>
 
                 <div v-if="Object.keys(form.errors).length"

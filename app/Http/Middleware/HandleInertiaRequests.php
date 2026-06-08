@@ -50,8 +50,18 @@ class HandleInertiaRequests extends Middleware
 
             'nav_product_categories' => fn () => ProductCategory::where('is_active', true)
                 ->where('show_in_nav', true)
+                ->with('parent:id,slug')
                 ->orderBy('sort_order')->orderBy('id')
-                ->get(['slug', 'name', 'nav_group', 'nav_sub', 'nav_label']),
+                ->get(['id', 'parent_id', 'slug', 'name', 'is_system', 'nav_group', 'nav_sub', 'nav_label'])
+                ->map(fn ($c) => [
+                    'slug'        => $c->slug,
+                    'name'        => $c->name,
+                    'is_system'   => $c->is_system,
+                    'parent_slug' => $c->parent?->slug,
+                    'nav_group'   => $c->nav_group,
+                    'nav_sub'     => $c->nav_sub,
+                    'nav_label'   => $c->nav_label,
+                ]),
 
             'nav_structure' => fn () => NavItem::whereNull('parent_id')
                 ->where('is_active', true)

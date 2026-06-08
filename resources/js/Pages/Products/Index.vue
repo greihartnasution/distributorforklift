@@ -1,30 +1,23 @@
 <template>
     <PublicLayout>
-        <Head title="Produk — Forklift & Material Handling" />
+        <Head :title="activeCategory ? `${activeCategory.name} — ${systemCategory?.name}` : (systemCategory?.name ?? 'Produk')" />
 
         <!-- Breadcrumb -->
         <div class="bg-white border-b border-gray-100">
-            <div
-                class="max-w-screen-xl mx-auto px-4 py-3 flex items-center gap-2 text-sm text-gray-400"
-            >
-                <a
-                    href="/"
-                    class="hover:text-orange-600 transition-colors duration-150"
-                    >Home</a
-                >
+            <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center gap-2 text-sm text-gray-400">
+                <a href="/" class="hover:text-orange-600 transition-colors duration-150">Home</a>
                 <span>›</span>
-                <a
-                    v-if="activeCategory"
-                    :href="route('products.index')"
-                    class="hover:text-orange-600 transition-colors duration-150"
-                    >Produk</a
-                >
-                <span v-else class="text-slate-600 font-medium">Produk</span>
+                <!-- System category -->
+                <a v-if="activeCategory && systemCategory"
+                    :href="route('products.system', systemCategory.slug)"
+                    class="hover:text-orange-600 transition-colors duration-150">
+                    {{ systemCategory.name }}
+                </a>
+                <span v-else class="text-slate-600 font-medium">{{ systemCategory?.name ?? 'Produk' }}</span>
+                <!-- Sub category -->
                 <template v-if="activeCategory">
                     <span>›</span>
-                    <span
-                        class="text-slate-600 font-medium truncate max-w-[200px] md:max-w-xs"
-                    >
+                    <span class="text-slate-600 font-medium truncate max-w-[200px] md:max-w-xs">
                         {{ activeCategory.name }}
                     </span>
                 </template>
@@ -161,23 +154,21 @@
                                     class="px-4 py-3 space-y-1"
                                 >
                                     <Link
-                                        :href="route('products.index')"
-                                        class="filter-checkbox-row text-sm py-1"
+                                        :href="route('products.system', systemCategory?.slug)"
+                                        class="filter-checkbox-row lg:text-lg py-1"
                                         :class="
                                             !activeCategory
                                                 ? 'font-semibold text-orange-600'
                                                 : 'text-slate-600'
                                         "
                                     >
-                                        Semua Produk
+                                        Semua
                                     </Link>
                                     <Link
                                         v-for="cat in categories"
                                         :key="cat.id"
-                                        :href="
-                                            route('products.category', cat.slug)
-                                        "
-                                        class="filter-checkbox-row text-sm py-1"
+                                        :href="route('products.sub', [systemCategory?.slug, cat.slug])"
+                                        class="filter-checkbox-row lg:text-lg py-1"
                                         :class="
                                             activeCategory?.slug === cat.slug
                                                 ? 'font-semibold text-orange-600'
@@ -362,9 +353,10 @@
                                             :value="opt"
                                             class="filter-checkbox"
                                         />
-                                        <span class="text-sm text-slate-600">{{
-                                            opt
-                                        }}</span>
+                                        <span
+                                            class="lg:text-lg text-slate-600"
+                                            >{{ opt }}</span
+                                        >
                                     </label>
                                 </div>
                             </div>
@@ -415,9 +407,10 @@
                                             :value="opt"
                                             class="filter-checkbox"
                                         />
-                                        <span class="text-sm text-slate-600">{{
-                                            opt
-                                        }}</span>
+                                        <span
+                                            class="lg:text-lg text-slate-600"
+                                            >{{ opt }}</span
+                                        >
                                     </label>
                                 </div>
                             </div>
@@ -466,9 +459,10 @@
                                             :value="opt"
                                             class="filter-checkbox"
                                         />
-                                        <span class="text-sm text-slate-600">{{
-                                            opt
-                                        }}</span>
+                                        <span
+                                            class="lg:text-lg text-slate-600"
+                                            >{{ opt }}</span
+                                        >
                                     </label>
                                 </div>
                             </div>
@@ -498,6 +492,7 @@
                                 :key="product.id"
                                 :href="
                                     route('products.show', [
+                                        product.system_slug,
                                         product.category_slug,
                                         product.slug,
                                     ])
@@ -509,7 +504,10 @@
                                     class="relative bg-gray-50 flex items-center justify-center h-68 overflow-hidden"
                                 >
                                     <img
-                                        :src="product.image ?? '/static/placeholder-produk.webp'"
+                                        :src="
+                                            product.image ??
+                                            '/static/placeholder-produk.webp'
+                                        "
                                         :alt="product.name"
                                         class="h-full object-contain group-hover:scale-105 transition-transform duration-500"
                                     />
@@ -593,10 +591,11 @@ import PublicLayout from "@/Layouts/PublicLayout.vue";
 import InquirySection from "@/Components/Public/InquirySection.vue";
 
 const props = defineProps({
-    categories: { type: Array, default: () => [] },
-    products: { type: Array, default: () => [] },
+    systemCategory: { type: Object, default: null },
+    categories:     { type: Array,  default: () => [] },
+    products:       { type: Array,  default: () => [] },
     activeCategory: { type: Object, default: null },
-    hero: { type: Object, default: null },
+    hero:           { type: Object, default: null },
 });
 
 // ── Filter state ─────────────────────────────────────────────────
@@ -752,7 +751,7 @@ const displayProducts = computed(() => props.products);
 .filter-checkbox-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     cursor: pointer;
 }
 .filter-checkbox {

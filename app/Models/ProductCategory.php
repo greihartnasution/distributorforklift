@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class ProductCategory extends Model
 {
     protected $fillable = [
+        'parent_id',
         'name',
         'slug',
         'description',
@@ -45,6 +47,16 @@ class ProductCategory extends Model
                 $model->slug = Str::slug($model->name);
             }
         });
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(ProductCategory::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(ProductCategory::class, 'parent_id')->orderBy('sort_order')->orderBy('id');
     }
 
     public function products(): HasMany

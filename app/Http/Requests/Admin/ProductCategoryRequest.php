@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductCategoryRequest extends FormRequest
 {
@@ -17,10 +18,21 @@ class ProductCategoryRequest extends FormRequest
     public function rules(): array
     {
         $categoryId = $this->route('category')?->id;
+        $parentId   = $this->input('parent_id');
+
+        $slugUnique = Rule::unique('product_categories', 'slug')
+            ->ignore($categoryId);
+
+        if ($parentId) {
+            $slugUnique->where('parent_id', $parentId);
+        } else {
+            $slugUnique->whereNull('parent_id');
+        }
 
         return [
+            'parent_id'   => ['nullable', 'exists:product_categories,id'],
             'name'        => ['required', 'string', 'max:255'],
-            'slug'        => ['nullable', 'string', 'max:255', 'unique:product_categories,slug,' . $categoryId],
+            'slug'        => ['nullable', 'string', 'max:255', $slugUnique],
             'description' => ['nullable', 'string'],
             'image'       => ['nullable', 'image', 'max:2048'],
             'sort_order'  => ['nullable', 'integer', 'min:0'],

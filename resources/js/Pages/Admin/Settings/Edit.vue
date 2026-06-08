@@ -1,23 +1,63 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, useForm } from "@inertiajs/vue3";
+import { ref } from "vue";
 
 const props = defineProps({ setting: Object });
 
 const form = useForm({
-    _method:   "PUT",
-    phone:     props.setting.phone ?? "",
-    whatsapp:  props.setting.whatsapp ?? "",
-    email:     props.setting.email ?? "",
-    address:   props.setting.address ?? "",
-    youtube:   props.setting.youtube ?? "",
-    instagram: props.setting.instagram ?? "",
-    tiktok:    props.setting.tiktok ?? "",
-    facebook:  props.setting.facebook ?? "",
+    _method:          "PUT",
+    site_name:        props.setting.site_name        ?? "",
+    meta_description: props.setting.meta_description ?? "",
+    og_image:         null,
+    clear_og_image:   false,
+    favicon:          null,
+    clear_favicon:    false,
+    phone:            props.setting.phone     ?? "",
+    whatsapp:         props.setting.whatsapp  ?? "",
+    email:            props.setting.email     ?? "",
+    address:          props.setting.address   ?? "",
+    youtube:          props.setting.youtube   ?? "",
+    instagram:        props.setting.instagram ?? "",
+    tiktok:           props.setting.tiktok    ?? "",
+    facebook:         props.setting.facebook  ?? "",
 });
 
+const ogPreview      = ref(props.setting.og_image_url ?? null);
+const faviconPreview = ref(props.setting.favicon_url  ?? null);
+const ogInput        = ref(null);
+const faviconInput   = ref(null);
+
+function onOgChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    form.og_image       = file;
+    form.clear_og_image = false;
+    ogPreview.value     = URL.createObjectURL(file);
+}
+function clearOg() {
+    form.og_image       = null;
+    form.clear_og_image = true;
+    ogPreview.value     = null;
+    if (ogInput.value) ogInput.value.value = "";
+}
+
+function onFaviconChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    form.favicon       = file;
+    form.clear_favicon = false;
+    faviconPreview.value = URL.createObjectURL(file);
+}
+function clearFavicon() {
+    form.favicon         = null;
+    form.clear_favicon   = true;
+    faviconPreview.value = null;
+    if (faviconInput.value) faviconInput.value.value = "";
+}
+
 function submit() {
-    form.post(route("admin.settings.update"));
+    form.post(route("admin.settings.update"), { forceFormData: true });
 }
 </script>
 
@@ -41,7 +81,71 @@ function submit() {
                 <p class="text-xs text-slate-400 mt-0.5">Informasi perusahaan dan media sosial.</p>
             </div>
 
-            <form @submit.prevent="submit" class="space-y-5">
+            <form @submit.prevent="submit" enctype="multipart/form-data" class="space-y-5">
+
+                <!-- SEO & Identitas -->
+                <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
+                    <div>
+                        <p class="text-xs font-bold text-slate-700 uppercase tracking-wide">SEO & Identitas Situs</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Digunakan pada meta tag, Open Graph, dan tab browser.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">
+                            Nama Situs
+                            <span class="font-normal text-slate-400 ml-1">— muncul di tab browser & OG title</span>
+                        </label>
+                        <input v-model="form.site_name" type="text" placeholder="Distributor Forklift Indonesia"
+                            class="w-full border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">
+                            Meta Description
+                            <span class="font-normal text-slate-400 ml-1">— maks. 160 karakter, tampil di hasil pencarian Google</span>
+                        </label>
+                        <textarea v-model="form.meta_description" rows="3" maxlength="300"
+                            placeholder="Distributor forklift dan solusi material handling terpercaya untuk industri Indonesia."
+                            class="w-full border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors resize-none"></textarea>
+                        <p class="text-[10px] text-slate-400 mt-1">
+                            {{ (form.meta_description ?? "").length }} / 300 karakter
+                        </p>
+                    </div>
+
+                    <!-- OG Image -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">
+                            OG Image (Social Share)
+                            <span class="font-normal text-slate-400 ml-1">— ukuran ideal 1200×630 px</span>
+                        </label>
+                        <div v-if="ogPreview" class="relative mb-2 w-full max-w-xs">
+                            <img :src="ogPreview" alt="OG Preview" class="w-full rounded border border-gray-200 object-cover" style="aspect-ratio:1200/630" />
+                            <button type="button" @click="clearOg"
+                                class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">×</button>
+                        </div>
+                        <input ref="ogInput" type="file" accept="image/*" @change="onOgChange"
+                            class="block text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                        <p class="text-[10px] text-slate-400 mt-1">JPG, PNG, WebP. Maks 1.5 MB.</p>
+                        <p v-if="form.errors.og_image" class="text-xs text-red-500 mt-1">{{ form.errors.og_image }}</p>
+                    </div>
+
+                    <!-- Favicon -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">
+                            Favicon
+                            <span class="font-normal text-slate-400 ml-1">— PNG 32×32 atau 64×64 px</span>
+                        </label>
+                        <div v-if="faviconPreview" class="relative mb-2 inline-flex">
+                            <img :src="faviconPreview" alt="Favicon Preview" class="w-10 h-10 rounded border border-gray-200 object-contain bg-gray-50" />
+                            <button type="button" @click="clearFavicon"
+                                class="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">×</button>
+                        </div>
+                        <input ref="faviconInput" type="file" accept="image/png,image/x-icon,image/webp" @change="onFaviconChange"
+                            class="block text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                        <p class="text-[10px] text-slate-400 mt-1">PNG atau WebP. Maks 256 KB. Jika kosong, menggunakan favicon.ico default.</p>
+                        <p v-if="form.errors.favicon" class="text-xs text-red-500 mt-1">{{ form.errors.favicon }}</p>
+                    </div>
+                </div>
 
                 <!-- Informasi Kontak -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">

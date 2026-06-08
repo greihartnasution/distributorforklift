@@ -14,18 +14,20 @@ class InquirySettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'heading' => ['nullable', 'string', 'max:255'],
-            'intro'   => ['nullable', 'string', 'max:1000'],
-            'hours'   => ['nullable', 'string', 'max:100'],
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            'heading' => 'Heading',
-            'intro'   => 'Intro',
-            'hours'   => 'Jam Operasional',
+            'heading'            => ['nullable', 'string', 'max:255'],
+            'intro'              => ['nullable', 'string', 'max:1000'],
+            'hours'              => ['nullable', 'string', 'max:100'],
+            'consultant_name'    => ['nullable', 'string', 'max:255'],
+            'consultant_title'   => ['nullable', 'string', 'max:255'],
+            'consultant_company' => ['nullable', 'string', 'max:255'],
+            'consultant_phone'   => ['nullable', 'string', 'max:50'],
+            'consultant_email'   => ['nullable', 'email', 'max:255'],
+            'consultant_photo'   => ['nullable', 'image', 'max:1024'],
+            'clear_photo'        => ['boolean'],
+            'links_label'        => ['nullable', 'string', 'max:255'],
+            'link_1'             => ['nullable', 'string', 'max:255'],
+            'link_2'             => ['nullable', 'string', 'max:255'],
+            'link_3'             => ['nullable', 'string', 'max:255'],
         ];
     }
 }

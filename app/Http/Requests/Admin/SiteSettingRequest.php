@@ -14,14 +14,18 @@ class SiteSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone'     => ['nullable', 'string', 'max:30'],
-            'whatsapp'  => ['nullable', 'string', 'max:30'],
-            'email'     => ['nullable', 'email', 'max:255'],
-            'address'   => ['nullable', 'string', 'max:1000'],
-            'youtube'   => ['nullable', 'url', 'max:255'],
-            'instagram' => ['nullable', 'string', 'max:100'],
-            'tiktok'    => ['nullable', 'string', 'max:100'],
-            'facebook'  => ['nullable', 'string', 'max:100'],
+            'site_name'        => ['nullable', 'string', 'max:100'],
+            'meta_description' => ['nullable', 'string', 'max:300'],
+            'og_image'         => ['nullable', 'image', 'max:1500'],
+            'favicon'          => ['nullable', 'image', 'max:256', 'mimes:png,ico,webp'],
+            'phone'            => ['nullable', 'string', 'max:30'],
+            'whatsapp'         => ['nullable', 'string', 'max:30'],
+            'email'            => ['nullable', 'email', 'max:255'],
+            'address'          => ['nullable', 'string', 'max:1000'],
+            'youtube'          => ['nullable', 'url', 'max:255'],
+            'instagram'        => ['nullable', 'string', 'max:100'],
+            'tiktok'           => ['nullable', 'string', 'max:100'],
+            'facebook'         => ['nullable', 'string', 'max:100'],
         ];
     }
 

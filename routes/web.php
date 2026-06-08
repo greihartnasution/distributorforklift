@@ -86,9 +86,8 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/produk', [PublicProductController::class, 'index'])->name('products.index');
-Route::get('/produk/{category}', [PublicProductController::class, 'category'])->name('products.category');
-Route::get('/produk/{category}/{product}', [PublicProductController::class, 'show'])->name('products.show');
+// /produk redirect ke /forklift sebagai default
+Route::redirect('/produk', '/forklift', 301)->name('products.index');
 
 Route::get('/kontak', [ContactPageController::class, 'show'])->name('contact.show');
 Route::get('/berita', [NewsController::class, 'index'])->name('news.index');
@@ -178,4 +177,10 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::post('navigation/{navItem}/move', [NavItemController::class, 'move'])->name('admin.navigation.move');
 });
 
+// Auth routes harus didaftarkan SEBELUM catch-all product routes
 require __DIR__.'/auth.php';
+
+// ── Product routes (catch-all — harus PALING AKHIR) ──
+Route::get('/{systemCategory}', [PublicProductController::class, 'systemCategory'])->name('products.system');
+Route::get('/{systemCategory}/{subCategory}', [PublicProductController::class, 'subCategory'])->name('products.sub');
+Route::get('/{systemCategory}/{subCategory}/{product}', [PublicProductController::class, 'show'])->name('products.show');

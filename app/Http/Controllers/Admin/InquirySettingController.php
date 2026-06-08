@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\InquirySettingRequest;
 use App\Models\InquirySetting;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,9 +22,20 @@ class InquirySettingController extends Controller
 
         return Inertia::render('Admin/Inquiry/Edit', [
             'inquiry' => [
-                'heading' => $inquiry->heading,
-                'intro'   => $inquiry->intro,
-                'hours'   => $inquiry->hours,
+                'heading'            => $inquiry->heading,
+                'intro'              => $inquiry->intro,
+                'hours'              => $inquiry->hours,
+                'consultant_name'    => $inquiry->consultant_name,
+                'consultant_title'   => $inquiry->consultant_title,
+                'consultant_company' => $inquiry->consultant_company,
+                'consultant_phone'   => $inquiry->consultant_phone,
+                'consultant_email'   => $inquiry->consultant_email,
+                'consultant_photo'   => $inquiry->consultant_photo
+                    ? '/storage/' . $inquiry->consultant_photo : null,
+                'links_label'        => $inquiry->links_label,
+                'link_1'             => $inquiry->link_1,
+                'link_2'             => $inquiry->link_2,
+                'link_3'             => $inquiry->link_3,
             ],
         ]);
     }
@@ -31,7 +43,27 @@ class InquirySettingController extends Controller
     public function update(InquirySettingRequest $request): RedirectResponse
     {
         $inquiry = InquirySetting::firstOrCreate([]);
-        $inquiry->update($request->validated());
+        $data    = $request->validated();
+
+        if ($request->hasFile('consultant_photo')) {
+            if ($inquiry->consultant_photo) {
+                Storage::disk('public')->delete($inquiry->consultant_photo);
+            }
+            $data['consultant_photo'] = $request->file('consultant_photo')
+                ->store('inquiry', 'public');
+        } else {
+            unset($data['consultant_photo']);
+        }
+
+        if ($request->boolean('clear_photo')) {
+            if ($inquiry->consultant_photo) {
+                Storage::disk('public')->delete($inquiry->consultant_photo);
+            }
+            $data['consultant_photo'] = null;
+        }
+
+        unset($data['clear_photo']);
+        $inquiry->update($data);
 
         return back()->with('success', 'Pengaturan Inquiry berhasil disimpan.');
     }

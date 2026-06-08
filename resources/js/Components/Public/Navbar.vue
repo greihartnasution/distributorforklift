@@ -172,7 +172,7 @@
 
                 <!-- Shop / CTA Button -->
                 <a
-                    href="/produk"
+                    href="/forklift"
                     class="hidden lg:flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-5 py-2.5 transition-colors duration-200 ml-4 flex-shrink-0"
                 >
                     <svg
@@ -188,7 +188,7 @@
                             d="M4 6h16M4 10h16M4 14h16M4 18h16"
                         />
                     </svg>
-                    Katalog Produk
+                    Katalog Forklift
                 </a>
 
                 <!-- Mobile Hamburger -->
@@ -428,10 +428,10 @@
 
                 <div class="pt-4 pb-3 flex flex-col gap-2.5">
                     <a
-                        href="/produk"
+                        href="/forklift"
                         class="bg-orange-600 text-white text-lg font-semibold px-5 py-3 text-center hover:bg-orange-700 transition-colors"
                     >
-                        Katalog Produk
+                        Katalog Forklift
                     </a>
                 </div>
             </div>
@@ -686,7 +686,9 @@ const navItems = computed(() => {
 
             const dynamicFromCategories = categoriesForSub.map((c) => ({
                 label: c.nav_label || c.name,
-                href: route("products.category", c.slug),
+                href: c.is_system
+                    ? route("products.system", c.slug)
+                    : route("products.sub", [c.parent_slug, c.slug]),
             }));
 
             const allDynamic = [...dynamicFromPages, ...dynamicFromCategories];

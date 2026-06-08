@@ -10,112 +10,134 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function index(): Response
+    private function mapProduct(Product $p, string $systemSlug): array
     {
-        $systemCategory = ProductCategory::where('is_system', true)->first();
-
-        $categories = ProductCategory::where('is_active', true)
-            ->where('is_system', false)
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
-            ->get(['id', 'name', 'slug', 'description', 'image', 'products_count']);
-
-        $products = Product::with('category')
-            ->where('is_active', true)
-            ->get()
-            ->map(fn ($p) => [
-                'id'               => $p->id,
-                'name'             => $p->name,
-                'slug'             => $p->slug,
-                'short_description'=> $p->short_description,
-                'specs'            => $p->specs ?? [],
-                'image'            => $p->image ? '/storage/' . $p->image : null,
-                'category_name'    => $p->category?->name,
-                'category_slug'    => $p->category?->slug,
-            ]);
-
-        return Inertia::render('Products/Index', [
-            'categories' => $categories,
-            'products'   => $products,
-            'hero'       => [
-                'label'        => 'Katalog Produk',
-                'name'         => $systemCategory?->name ?? 'Produk',
-                'description'  => $systemCategory?->description,
-                'image'        => $systemCategory?->image ? '/storage/' . $systemCategory->image : null,
-                'show_inquiry' => $systemCategory?->show_inquiry ?? true,
-            ],
-        ]);
+        return [
+            'id'               => $p->id,
+            'name'             => $p->name,
+            'slug'             => $p->slug,
+            'short_description'=> $p->short_description,
+            'specs'            => $p->specs ?? [],
+            'image'            => $p->image ? '/storage/' . $p->image : null,
+            'category_slug'    => $p->category?->slug,
+            'system_slug'      => $systemSlug,
+        ];
     }
 
-    public function category(string $categorySlug): Response
+    private function mapHero(ProductCategory $cat, ?ProductCategory $system = null): array
     {
-        $category = ProductCategory::where('slug', $categorySlug)
+        // Sub-category pages: label auto from system category name
+        // System category pages: label from nav_label field
+        $label = $system
+            ? $system->name
+            : ($cat->nav_label ?: 'Katalog Produk');
+
+        return [
+            'label'        => $label,
+            'name'         => $cat->name,
+            'description'  => $cat->description,
+            'image'        => $cat->image ? '/storage/' . $cat->image : null,
+            'show_inquiry' => $cat->show_inquiry,
+        ];
+    }
+
+    public function systemCategory(string $systemSlug): Response
+    {
+        $system = ProductCategory::where('slug', $systemSlug)
+            ->where('is_system', true)
             ->where('is_active', true)
             ->firstOrFail();
 
-        $products = Product::where('product_category_id', $category->id)
+        $subCategories = ProductCategory::where('parent_id', $system->id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')->orderBy('id')
+            ->get();
+
+        $subIds = $subCategories->pluck('id');
+
+        $products = Product::with('category')
+            ->whereIn('product_category_id', $subIds)
             ->where('is_active', true)
             ->get()
-            ->map(fn ($p) => [
-                'id'               => $p->id,
-                'name'             => $p->name,
-                'slug'             => $p->slug,
-                'short_description'=> $p->short_description,
-                'specs'            => $p->specs ?? [],
-                'image'            => $p->image ? '/storage/' . $p->image : null,
-                'category_name'    => $category->name,
-                'category_slug'    => $category->slug,
-            ]);
-
-        $allCategories = ProductCategory::where('is_active', true)
-            ->where('is_system', false)
-            ->orderBy('sort_order')
-            ->get(['id', 'name', 'slug']);
+            ->map(fn ($p) => $this->mapProduct($p, $system->slug));
 
         return Inertia::render('Products/Index', [
-            'categories'     => $allCategories,
+            'systemCategory' => ['slug' => $system->slug, 'name' => $system->name],
+            'categories'     => $subCategories->map(fn ($c) => [
+                'id'   => $c->id, 'name' => $c->name, 'slug' => $c->slug,
+            ]),
             'products'       => $products,
-            'activeCategory' => [
-                'id'           => $category->id,
-                'name'         => $category->name,
-                'slug'         => $category->slug,
-                'description'  => $category->description,
-                'show_inquiry' => $category->show_inquiry,
-            ],
-            'hero' => [
-                'label'        => 'Katalog Produk',
-                'name'         => $category->name,
-                'description'  => $category->description,
-                'image'        => $category->image ? '/storage/' . $category->image : null,
-                'show_inquiry' => $category->show_inquiry,
-            ],
+            'activeCategory' => null,
+            'hero'           => $this->mapHero($system),
         ]);
     }
 
-    public function show(string $categorySlug, string $productSlug): Response
+    public function subCategory(string $systemSlug, string $subSlug): Response
     {
-        $category = ProductCategory::where('slug', $categorySlug)
+        $system = ProductCategory::where('slug', $systemSlug)
+            ->where('is_system', true)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $sub = ProductCategory::where('slug', $subSlug)
+            ->where('parent_id', $system->id)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $allSubs = ProductCategory::where('parent_id', $system->id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')->orderBy('id')
+            ->get();
+
+        $products = Product::with('category')
+            ->where('product_category_id', $sub->id)
+            ->where('is_active', true)
+            ->get()
+            ->map(fn ($p) => $this->mapProduct($p, $system->slug));
+
+        return Inertia::render('Products/Index', [
+            'systemCategory' => ['slug' => $system->slug, 'name' => $system->name],
+            'categories'     => $allSubs->map(fn ($c) => [
+                'id' => $c->id, 'name' => $c->name, 'slug' => $c->slug,
+            ]),
+            'products'       => $products,
+            'activeCategory' => [
+                'id'           => $sub->id,
+                'name'         => $sub->name,
+                'slug'         => $sub->slug,
+                'show_inquiry' => $sub->show_inquiry,
+            ],
+            'hero'           => $this->mapHero($sub, $system),
+        ]);
+    }
+
+    public function show(string $systemSlug, string $subSlug, string $productSlug): Response
+    {
+        $system = ProductCategory::where('slug', $systemSlug)
+            ->where('is_system', true)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $sub = ProductCategory::where('slug', $subSlug)
+            ->where('parent_id', $system->id)
             ->where('is_active', true)
             ->firstOrFail();
 
         $product = Product::where('slug', $productSlug)
-            ->where('product_category_id', $category->id)
+            ->where('product_category_id', $sub->id)
             ->where('is_active', true)
             ->firstOrFail();
 
         return Inertia::render('Products/Show', [
-            'product'  => [
+            'systemCategory' => ['slug' => $system->slug, 'name' => $system->name],
+            'subCategory'    => ['slug' => $sub->slug,    'name' => $sub->name],
+            'product'        => [
                 'id'               => $product->id,
                 'name'             => $product->name,
                 'short_description'=> $product->short_description,
                 'full_description' => $product->full_description,
                 'specs'            => $product->specs ?? [],
                 'image'            => $product->image ? '/storage/' . $product->image : null,
-            ],
-            'category' => [
-                'name' => $category->name,
-                'slug' => $category->slug,
             ],
         ]);
     }

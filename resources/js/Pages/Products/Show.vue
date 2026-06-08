@@ -7,10 +7,11 @@
             <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center gap-2 text-sm text-gray-400">
                 <a href="/" class="hover:text-orange-600 transition-colors duration-150">Home</a>
                 <span>›</span>
-                <a :href="route('products.index')" class="hover:text-orange-600 transition-colors duration-150">Produk</a>
+                <a :href="route('products.system', systemCategory.slug)"
+                    class="hover:text-orange-600 transition-colors duration-150">{{ systemCategory.name }}</a>
                 <span>›</span>
-                <a :href="route('products.category', category.slug)"
-                    class="hover:text-orange-600 transition-colors duration-150">{{ category.name }}</a>
+                <a :href="route('products.sub', [systemCategory.slug, subCategory.slug])"
+                    class="hover:text-orange-600 transition-colors duration-150">{{ subCategory.name }}</a>
                 <span>›</span>
                 <span class="text-slate-600 font-medium truncate max-w-[200px] md:max-w-xs">{{ product.name }}</span>
             </div>
@@ -24,7 +25,7 @@
                     <div class="inline-flex items-center gap-2 mb-4">
                         <span class="w-6 h-0.5 bg-orange-600"></span>
                         <span class="text-xs font-bold text-orange-600 uppercase tracking-widest">
-                            {{ category.name }}
+                            {{ subCategory.name }}
                         </span>
                     </div>
                     <h1 class="text-3xl lg:text-4xl xl:text-[2.6rem] font-bold text-slate-900 leading-tight mb-4">
@@ -41,7 +42,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
                             </svg>
                         </a>
-                        <a :href="route('products.category', category.slug)"
+                        <a :href="route('products.sub', [systemCategory.slug, subCategory.slug])"
                             class="inline-flex items-center gap-2 border border-gray-200 hover:border-orange-400 text-slate-600 hover:text-orange-600 md:text-lg font-semibold px-6 py-3 transition-colors duration-200">
                             ← Kembali
                         </a>
@@ -102,8 +103,9 @@ import PublicLayout from "@/Layouts/PublicLayout.vue";
 import InquirySection from "@/Components/Public/InquirySection.vue";
 
 defineProps({
-    product:  { type: Object, required: true },
-    category: { type: Object, required: true },
+    product:        { type: Object, required: true },
+    systemCategory: { type: Object, required: true },
+    subCategory:    { type: Object, required: true },
 });
 </script>
 

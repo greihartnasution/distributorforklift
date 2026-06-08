@@ -43,7 +43,8 @@
       "PowerShell(Get-ChildItem \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\app\\\\Models\\\\\" | Where-Object { $_.Name -match \"Product\" })",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Products\\\\Category\")",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Products\\\\Product\")",
-      "PowerShell(cd \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\" ; php artisan tinker --execute=\"App\\\\Models\\\\ProductCategory::orderBy\\('sort_order'\\)->orderBy\\('id'\\)->get\\(['id','name','slug','description','image','sort_order','is_active','is_system','show_in_nav','show_inquiry','nav_group','nav_sub','nav_label']\\)->each\\(function\\(\\\\$c\\){ echo json_encode\\(\\\\$c->toArray\\(\\)\\) . PHP_EOL; }\\);\")"
+      "PowerShell(cd \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\" ; php artisan tinker --execute=\"App\\\\Models\\\\ProductCategory::orderBy\\('sort_order'\\)->orderBy\\('id'\\)->get\\(['id','name','slug','description','image','sort_order','is_active','is_system','show_in_nav','show_inquiry','nav_group','nav_sub','nav_label']\\)->each\\(function\\(\\\\$c\\){ echo json_encode\\(\\\\$c->toArray\\(\\)\\) . PHP_EOL; }\\);\")",
+      "PowerShell(php -r \"echo 'post_max_size: ' . ini_get\\('post_max_size'\\) . PHP_EOL . 'upload_max_filesize: ' . ini_get\\('upload_max_filesize'\\) . PHP_EOL;\")"
     ]
   }
 }

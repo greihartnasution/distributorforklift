@@ -14,7 +14,11 @@ class ProductController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Products/Product/Index', [
-            'products' => Product::with('category')
+            'systemCategories' => ProductCategory::where('is_system', true)
+                ->orderBy('sort_order')
+                ->get(['id', 'name', 'slug']),
+
+            'products' => Product::with(['category.parent'])
                 ->orderBy('product_category_id')
                 ->orderBy('id')
                 ->get()
@@ -26,18 +30,24 @@ class ProductController extends Controller
                     'is_active'     => $p->is_active,
                     'category_name' => $p->category?->name,
                     'category_slug' => $p->category?->slug,
+                    'system_slug'   => $p->category?->parent?->slug,
+                    'system_name'   => $p->category?->parent?->name,
                 ]),
         ]);
+    }
+
+    private function systemCategoriesForForm(): \Illuminate\Support\Collection
+    {
+        return ProductCategory::where('is_system', true)
+            ->with(['children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')->orderBy('id')])
+            ->orderBy('sort_order')->orderBy('id')
+            ->get(['id', 'name', 'slug']);
     }
 
     public function create()
     {
         return Inertia::render('Admin/Products/Product/Form', [
-            'categories' => ProductCategory::where('is_active', true)
-                ->where('is_system', false)
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->get(['id', 'name']),
+            'systemCategories' => $this->systemCategoriesForForm(),
         ]);
     }
 
@@ -57,15 +67,14 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $product->load('category.parent');
+
         return Inertia::render('Admin/Products/Product/Form', [
-            'product'    => array_merge($product->toArray(), [
-                'image_url' => $product->image ? '/storage/' . $product->image : null,
+            'product'          => array_merge($product->toArray(), [
+                'image_url'          => $product->image ? '/storage/' . $product->image : null,
+                'system_category_id' => $product->category?->parent?->id,
             ]),
-            'categories' => ProductCategory::where('is_active', true)
-                ->where('is_system', false)
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->get(['id', 'name']),
+            'systemCategories' => $this->systemCategoriesForForm(),
         ]);
     }
 

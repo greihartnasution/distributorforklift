@@ -13,27 +13,26 @@ class ProductCategoryController extends Controller
 {
     public function index()
     {
-        $categories = ProductCategory::withCount('products')
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-
-        $totalProducts = Product::count();
-
-        $categories->each(function ($cat) use ($totalProducts) {
-            if ($cat->is_system) {
-                $cat->products_count = $totalProducts;
-            }
-        });
+        $systemCategories = ProductCategory::where('is_system', true)
+            ->with(['children' => fn ($q) => $q->withCount('products')->orderBy('sort_order')->orderBy('id')])
+            ->orderBy('sort_order')->orderBy('id')
+            ->get()
+            ->map(function ($sys) {
+                $sys->products_count = $sys->children->sum('products_count');
+                return $sys;
+            });
 
         return Inertia::render('Admin/Products/Category/Index', [
-            'categories' => $categories,
+            'systemCategories' => $systemCategories,
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Admin/Products/Category/Form');
+        return Inertia::render('Admin/Products/Category/Form', [
+            'systemCategories' => ProductCategory::where('is_system', true)
+                ->orderBy('sort_order')->get(['id', 'name', 'slug']),
+        ]);
     }
 
     public function store(ProductCategoryRequest $request)
@@ -53,7 +52,9 @@ class ProductCategoryController extends Controller
     public function edit(ProductCategory $category)
     {
         return Inertia::render('Admin/Products/Category/Form', [
-            'category' => $category,
+            'category'         => $category,
+            'systemCategories' => ProductCategory::where('is_system', true)
+                ->orderBy('sort_order')->get(['id', 'name', 'slug']),
         ]);
     }
 

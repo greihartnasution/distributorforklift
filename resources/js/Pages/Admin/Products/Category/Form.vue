@@ -1,34 +1,32 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
-import { ref, computed } from "vue";
+import { Head, Link, useForm } from "@inertiajs/vue3";
+import { ref, computed, watch } from "vue";
 
 const props = defineProps({
-    category: { type: Object, default: null },
+    category:         { type: Object, default: null },
+    systemCategories: { type: Array,  default: () => [] },
 });
 
 const isEdit = !!props.category;
 const isSystem = props.category?.is_system ?? false;
 
-const navStructure = computed(() => usePage().props.nav_structure ?? []);
+const NAV_MAP = {
+    "forklift":       { nav_group: "Forklift", nav_sub: "Forklift Baru" },
+    "sewa-forklift":  { nav_group: "Forklift", nav_sub: "Sewa Forklift" },
+};
 
-const NAV_GROUPS = computed(() =>
-    navStructure.value
-        .filter((item) => item.subItems && item.subItems.length)
-        .map((item) => item.label)
+const selectedParent = computed(() =>
+    props.systemCategories.find((s) => s.id == form.parent_id) ?? null
 );
 
-const NAV_SUB_MAP = computed(() => {
-    const map = {};
-    navStructure.value
-        .filter((item) => item.subItems && item.subItems.length)
-        .forEach((item) => {
-            map[item.label] = item.subItems.map((sub) => sub.label);
-        });
-    return map;
-});
+function navDefaultsForParent(parentId) {
+    const sys = props.systemCategories.find((s) => s.id == parentId);
+    return NAV_MAP[sys?.slug] ?? { nav_group: "", nav_sub: "" };
+}
 
 const form = useForm({
+    parent_id:    props.category?.parent_id    ?? "",
     name:         props.category?.name         ?? "",
     slug:         props.category?.slug         ?? "",
     description:  props.category?.description  ?? "",
@@ -40,6 +38,13 @@ const form = useForm({
     nav_label:    props.category?.nav_label    ?? "",
     show_in_nav:  props.category?.show_in_nav  ?? false,
     show_inquiry: props.category?.show_inquiry ?? true,
+});
+
+watch(() => form.parent_id, (parentId) => {
+    const defaults = navDefaultsForParent(parentId);
+    form.nav_group   = defaults.nav_group;
+    form.nav_sub     = defaults.nav_sub;
+    form.show_in_nav = !!defaults.nav_group;
 });
 
 const imagePreview = ref(
@@ -111,6 +116,21 @@ function submit() {
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Informasi Kategori</h2>
 
+                    <!-- Induk Kategori — hanya untuk sub-kategori (bukan sistem) -->
+                    <div v-if="!isSystem">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                            Induk Kategori <span class="text-red-500">*</span>
+                        </label>
+                        <select v-model="form.parent_id" required
+                            class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 bg-white">
+                            <option value="" disabled>-- Pilih kategori induk --</option>
+                            <option v-for="sys in systemCategories" :key="sys.id" :value="sys.id">
+                                {{ sys.name }} (/{{ sys.slug }})
+                            </option>
+                        </select>
+                        <p v-if="form.errors.parent_id" class="text-xs text-red-500 mt-1">{{ form.errors.parent_id }}</p>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">
                             Nama Kategori <span v-if="!isSystem" class="text-red-500">*</span>
@@ -126,7 +146,9 @@ function submit() {
                     <div v-if="!isSystem">
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Slug URL</label>
                         <div class="flex items-center border border-gray-200 rounded overflow-hidden focus-within:border-orange-400 focus-within:ring-1 focus-within:ring-orange-400">
-                            <span class="bg-gray-50 border-r border-gray-200 px-3 py-2 text-xs text-slate-400 shrink-0">/produk/</span>
+                            <span class="bg-gray-50 border-r border-gray-200 px-3 py-2 text-xs text-slate-400 shrink-0">
+                                /{{ selectedParent?.slug ?? '...' }}/
+                            </span>
                             <input v-model="form.slug" type="text"
                                 class="flex-1 px-3 py-2 text-sm text-slate-800 focus:outline-none"
                                 placeholder="reach-truck" />
@@ -137,9 +159,22 @@ function submit() {
                     <div v-else>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">URL Halaman</label>
                         <div class="flex items-center border border-gray-100 rounded overflow-hidden bg-gray-50">
-                            <span class="px-3 py-2 text-sm text-slate-400">/produk</span>
+                            <span class="px-3 py-2 text-sm text-slate-400">/{{ category?.slug }}</span>
                         </div>
                         <p class="text-xs text-slate-400 mt-1">URL tidak dapat diubah untuk kategori ini.</p>
+                    </div>
+
+                    <!-- Label Hero — hanya untuk sistem kategori -->
+                    <div v-if="isSystem">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                            Label Hero
+                            <span class="font-normal text-slate-400 ml-1">— teks kecil di atas judul halaman</span>
+                        </label>
+                        <input v-model="form.nav_label" type="text"
+                            class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                            placeholder="e.g. Katalog Forklift" />
+                        <p class="text-xs text-slate-400 mt-1">Kosongkan untuk menggunakan default "Katalog Produk".</p>
+                        <p v-if="form.errors.nav_label" class="text-xs text-red-500 mt-1">{{ form.errors.nav_label }}</p>
                     </div>
 
                     <div>
@@ -179,8 +214,8 @@ function submit() {
                     </div>
                 </div>
 
-                <!-- Pengaturan Navigasi — disembunyikan untuk kategori sistem -->
-                <div v-if="!isSystem" class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
+                <!-- Pengaturan Navigasi — disembunyikan sepenuhnya, diset otomatis via watch -->
+                <div v-if="false" class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Pengaturan Navigasi</p>
 
                     <!-- Toggle show_in_nav -->
