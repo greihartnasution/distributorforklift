@@ -44,7 +44,17 @@
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Products\\\\Category\")",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\\\\resources\\\\js\\\\Pages\\\\Admin\\\\Products\\\\Product\")",
       "PowerShell(cd \"d:\\\\htdocs\\\\NEW\\\\distributorforklift\" ; php artisan tinker --execute=\"App\\\\Models\\\\ProductCategory::orderBy\\('sort_order'\\)->orderBy\\('id'\\)->get\\(['id','name','slug','description','image','sort_order','is_active','is_system','show_in_nav','show_inquiry','nav_group','nav_sub','nav_label']\\)->each\\(function\\(\\\\$c\\){ echo json_encode\\(\\\\$c->toArray\\(\\)\\) . PHP_EOL; }\\);\")",
-      "PowerShell(php -r \"echo 'post_max_size: ' . ini_get\\('post_max_size'\\) . PHP_EOL . 'upload_max_filesize: ' . ini_get\\('upload_max_filesize'\\) . PHP_EOL;\")"
+      "PowerShell(php -r \"echo 'post_max_size: ' . ini_get\\('post_max_size'\\) . PHP_EOL . 'upload_max_filesize: ' . ini_get\\('upload_max_filesize'\\) . PHP_EOL;\")",
+      "Bash(php -v)",
+      "Bash(npx vue-tsc *)",
+      "Bash(npx vite *)",
+      "Bash(php -i)",
+      "Bash(grep -n \"^upload_max_filesize\\\\|^post_max_size\" \"C:\\\\xampp\\\\php\\\\php.ini\")",
+      "Read(//c/xampp/php/**)",
+      "Bash(sed -i 's/^upload_max_filesize = 2M/upload_max_filesize = 20M/' \"C:\\\\xampp\\\\php\\\\php.ini\")",
+      "Bash(sed -i 's/^post_max_size = 8M/post_max_size = 25M/' \"C:\\\\xampp\\\\php\\\\php.ini\")",
+      "Bash(find /c/xampp -iname \"php.ini\" 2>/dev/null)",
+      "Read(//c/xampp/**)"
     ]
   }
 }

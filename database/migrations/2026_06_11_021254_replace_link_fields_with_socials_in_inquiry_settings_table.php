@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('inquiry_settings', function (Blueprint $table) {
+            $table->dropColumn(['links_label', 'link_1', 'link_2', 'link_3']);
+            $table->string('instagram')->nullable()->after('consultant_photo');
+            $table->string('tiktok')->nullable()->after('instagram');
+            $table->string('youtube')->nullable()->after('tiktok');
+            $table->string('facebook')->nullable()->after('youtube');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('inquiry_settings', function (Blueprint $table) {
+            $table->dropColumn(['instagram', 'tiktok', 'youtube', 'facebook']);
+            $table->string('links_label')->nullable();
+            $table->string('link_1')->nullable();
+            $table->string('link_2')->nullable();
+            $table->string('link_3')->nullable();
+        });
+    }
+};

@@ -21,10 +21,10 @@ class InquirySettingSeeder extends Seeder
             'consultant_phone'   => '085156373175',
             'consultant_email'   => 'marchelya@eurotrucks-id.com',
             'consultant_photo'   => 'inquiry/A8BKWCq0LfrmvjcPBtz7JUDiQo1xC8Xa72yaEYTG.png',
-            'links_label'        => 'For further information please visit',
-            'link_1'             => 'still.co.uk',
-            'link_2'             => 'eurotrucks-id.com',
-            'link_3'             => 'tiktok.com/@forkliftstill',
+            'instagram'          => 'https://www.instagram.com/forkliftstill',
+            'tiktok'             => 'https://www.tiktok.com/@forkliftstill',
+            'youtube'            => null,
+            'facebook'           => null,
         ]);
     }
 }

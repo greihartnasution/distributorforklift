@@ -12,6 +12,6 @@ class InquirySetting extends Model
         'heading', 'intro', 'hours',
         'consultant_name', 'consultant_title', 'consultant_company',
         'consultant_phone', 'consultant_email', 'consultant_photo',
-        'links_label', 'link_1', 'link_2', 'link_3',
+        'instagram', 'tiktok', 'youtube', 'facebook',
     ];
 }

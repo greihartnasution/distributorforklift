@@ -32,10 +32,10 @@ class InquirySettingController extends Controller
                 'consultant_email'   => $inquiry->consultant_email,
                 'consultant_photo'   => $inquiry->consultant_photo
                     ? '/storage/' . $inquiry->consultant_photo : null,
-                'links_label'        => $inquiry->links_label,
-                'link_1'             => $inquiry->link_1,
-                'link_2'             => $inquiry->link_2,
-                'link_3'             => $inquiry->link_3,
+                'instagram'          => $inquiry->instagram,
+                'tiktok'             => $inquiry->tiktok,
+                'youtube'            => $inquiry->youtube,
+                'facebook'           => $inquiry->facebook,
             ],
         ]);
     }

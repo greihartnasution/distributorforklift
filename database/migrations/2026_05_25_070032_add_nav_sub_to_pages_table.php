@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('pages', 'nav_sub')) {
+            return;
+        }
+
         Schema::table('pages', function (Blueprint $table) {
             $table->string('nav_sub')->nullable()->after('nav_group');
         });

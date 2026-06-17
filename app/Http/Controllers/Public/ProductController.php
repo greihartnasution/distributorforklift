@@ -137,7 +137,18 @@ class ProductController extends Controller
                 'short_description'=> $product->short_description,
                 'full_description' => $product->full_description,
                 'specs'            => $product->specs ?? [],
+                'highlights'       => $product->highlights ?? [],
+                'highlight_image'  => $product->highlight_image,
+                'details'          => $product->details ?? [],
+                'solutions_title'      => $product->solutions_title,
+                'solutions_description' => $product->solutions_description,
+                'solutions'        => $product->solutions ?? [],
+                'media_items'      => $product->media_items ?? [],
+                'model_overview'   => $product->model_overview ?? [],
+                'downloads'        => $product->downloads ?? [],
                 'image'            => $product->image ? '/storage/' . $product->image : null,
+                'image_url'        => $product->image_url,
+                'video_url'        => $product->video_url,
             ],
         ]);
     }

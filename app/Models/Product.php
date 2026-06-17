@@ -15,13 +15,30 @@ class Product extends Model
         'short_description',
         'full_description',
         'specs',
+        'highlights',
+        'highlight_image',
+        'details',
+        'solutions_title',
+        'solutions_description',
+        'solutions',
+        'media_items',
+        'model_overview',
+        'downloads',
         'image',
+        'image_url',
+        'video_url',
         'is_active',
     ];
 
     protected $casts = [
-        'specs'     => 'array',
-        'is_active' => 'boolean',
+        'specs'          => 'array',
+        'highlights'     => 'array',
+        'details'        => 'array',
+        'solutions'      => 'array',
+        'media_items'    => 'array',
+        'model_overview' => 'array',
+        'downloads'      => 'array',
+        'is_active'      => 'boolean',
     ];
 
     protected static function boot(): void

@@ -24,10 +24,10 @@ class InquirySettingRequest extends FormRequest
             'consultant_email'   => ['nullable', 'email', 'max:255'],
             'consultant_photo'   => ['nullable', 'image', 'max:1024'],
             'clear_photo'        => ['boolean'],
-            'links_label'        => ['nullable', 'string', 'max:255'],
-            'link_1'             => ['nullable', 'string', 'max:255'],
-            'link_2'             => ['nullable', 'string', 'max:255'],
-            'link_3'             => ['nullable', 'string', 'max:255'],
+            'instagram'          => ['nullable', 'url', 'max:255'],
+            'tiktok'             => ['nullable', 'url', 'max:255'],
+            'youtube'            => ['nullable', 'url', 'max:255'],
+            'facebook'           => ['nullable', 'url', 'max:255'],
         ];
     }
 }

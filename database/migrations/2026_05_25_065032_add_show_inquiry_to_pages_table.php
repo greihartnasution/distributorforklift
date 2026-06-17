@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('pages', 'show_inquiry')) {
+            return;
+        }
+
         Schema::table('pages', function (Blueprint $table) {
             $table->boolean('show_inquiry')->default(false)->after('show_in_nav');
         });
