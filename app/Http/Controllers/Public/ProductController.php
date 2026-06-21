@@ -148,6 +148,8 @@ class ProductController extends Controller
                 'downloads'        => $product->downloads ?? [],
                 'image'            => $product->image ? '/storage/' . $product->image : null,
                 'image_url'        => $product->image_url,
+                'hero_cert_badge_1' => $product->hero_cert_badge_1,
+                'hero_cert_badge_2' => $product->hero_cert_badge_2,
                 'video_url'        => $product->video_url,
             ],
         ]);

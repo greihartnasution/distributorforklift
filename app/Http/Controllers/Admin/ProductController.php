@@ -109,6 +109,17 @@ class ProductController extends Controller
         }
         unset($data['download_files']);
 
+        // Hero certification badges
+        if ($request->hasFile('hero_cert_badge_1_file')) {
+            $data['hero_cert_badge_1'] = '/storage/' . $request->file('hero_cert_badge_1_file')->store('hero-badges', 'public');
+        }
+        unset($data['hero_cert_badge_1_file'], $data['clear_hero_cert_badge_1']);
+
+        if ($request->hasFile('hero_cert_badge_2_file')) {
+            $data['hero_cert_badge_2'] = '/storage/' . $request->file('hero_cert_badge_2_file')->store('hero-badges', 'public');
+        }
+        unset($data['hero_cert_badge_2_file'], $data['clear_hero_cert_badge_2']);
+
         Product::create($data);
 
         return redirect()->route('admin.products.index')
@@ -146,10 +157,10 @@ class ProductController extends Controller
 
         // Highlight section image
         if ($request->hasFile('highlight_image_file')) {
-            $this->deleteHighlightImage($product->highlight_image);
+            $this->deleteStoredImage($product->highlight_image);
             $data['highlight_image'] = '/storage/' . $request->file('highlight_image_file')->store('highlights', 'public');
         } elseif ($request->boolean('clear_highlight_image')) {
-            $this->deleteHighlightImage($product->highlight_image);
+            $this->deleteStoredImage($product->highlight_image);
             $data['highlight_image'] = null;
         } elseif (!empty($data['highlight_image'])) {
             // URL mode — value already in $data
@@ -206,13 +217,40 @@ class ProductController extends Controller
         }
         unset($data['download_files']);
 
+        // Hero certification badges
+        if ($request->hasFile('hero_cert_badge_1_file')) {
+            $this->deleteStoredImage($product->hero_cert_badge_1);
+            $data['hero_cert_badge_1'] = '/storage/' . $request->file('hero_cert_badge_1_file')->store('hero-badges', 'public');
+        } elseif ($request->boolean('clear_hero_cert_badge_1')) {
+            $this->deleteStoredImage($product->hero_cert_badge_1);
+            $data['hero_cert_badge_1'] = null;
+        } elseif (!empty($data['hero_cert_badge_1'])) {
+            // URL mode — value already in $data
+        } else {
+            unset($data['hero_cert_badge_1']);
+        }
+        unset($data['hero_cert_badge_1_file'], $data['clear_hero_cert_badge_1']);
+
+        if ($request->hasFile('hero_cert_badge_2_file')) {
+            $this->deleteStoredImage($product->hero_cert_badge_2);
+            $data['hero_cert_badge_2'] = '/storage/' . $request->file('hero_cert_badge_2_file')->store('hero-badges', 'public');
+        } elseif ($request->boolean('clear_hero_cert_badge_2')) {
+            $this->deleteStoredImage($product->hero_cert_badge_2);
+            $data['hero_cert_badge_2'] = null;
+        } elseif (!empty($data['hero_cert_badge_2'])) {
+            // URL mode — value already in $data
+        } else {
+            unset($data['hero_cert_badge_2']);
+        }
+        unset($data['hero_cert_badge_2_file'], $data['clear_hero_cert_badge_2']);
+
         $product->update($data);
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
-    private function deleteHighlightImage(?string $value): void
+    private function deleteStoredImage(?string $value): void
     {
         if ($value && !str_starts_with($value, 'http')) {
             $path = ltrim(str_replace('/storage/', '', $value), '/');

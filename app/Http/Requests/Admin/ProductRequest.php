@@ -61,6 +61,8 @@ class ProductRequest extends FormRequest
             'media_items.*.title'        => ['nullable', 'string', 'max:255'],
             'media_items.*.image'        => ['nullable', 'string', 'max:500'],
             'media_items.*.video_url'    => ['nullable', 'url', 'max:500'],
+            'media_items.*.date'         => ['nullable', 'string', 'max:50'],
+            'media_items.*.description'  => ['nullable', 'string'],
             'media_images'               => ['nullable', 'array'],
             'media_images.*'             => ['nullable', 'image:allow_svg', 'max:3072'],
             'model_overview'             => ['nullable', 'array'],
@@ -72,6 +74,12 @@ class ProductRequest extends FormRequest
             'downloads.*.size'           => ['nullable', 'string', 'max:50'],
             'download_files'             => ['nullable', 'array'],
             'download_files.*'           => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,zip', 'max:10240'],
+            'hero_cert_badge_1'          => ['nullable', 'string', 'max:500'],
+            'hero_cert_badge_1_file'     => ['nullable', 'image:allow_svg', 'max:2048'],
+            'clear_hero_cert_badge_1'    => ['boolean'],
+            'hero_cert_badge_2'          => ['nullable', 'string', 'max:500'],
+            'hero_cert_badge_2_file'     => ['nullable', 'image:allow_svg', 'max:2048'],
+            'clear_hero_cert_badge_2'    => ['boolean'],
             'is_active'                  => ['boolean'],
         ];
     }

@@ -3,6 +3,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
 import { ref, computed, watch } from "vue";
 import RichTextEditor from "@/Components/Admin/RichTextEditor.vue";
+import { SPEC_ICONS } from "@/Utils/specIcons";
 
 const props = defineProps({
     product:           { type: Object, default: null },
@@ -10,6 +11,19 @@ const props = defineProps({
 });
 
 const isEdit = !!props.product;
+
+// Fixed spec labels — also used as filter criteria on the product catalog page
+const SPEC_LABELS = [
+    "Kapasitas Angkat",
+    "Tinggi Angkat Maks",
+    "Otomatis",
+    "Kecepatan Jalan",
+    "Kapasitas Penarik",
+];
+
+// "Otomatis" is a boolean spec (checkbox) rather than free text — stored as
+// "Ya" when checked, empty when unchecked (so it's hidden per the empty-spec rule)
+const BOOLEAN_SPEC_LABELS = ["Otomatis"];
 
 const selectedSystemId = ref(props.product?.system_category_id ?? "");
 
@@ -29,7 +43,10 @@ const form = useForm({
     slug:                  props.product?.slug                ?? "",
     short_description:     props.product?.short_description   ?? "",
     full_description:      props.product?.full_description     ?? "",
-    specs:                 props.product?.specs               ?? [],
+    specs:                 SPEC_LABELS.map(label => ({
+                               label,
+                               value: props.product?.specs?.find(s => s.label === label)?.value ?? "",
+                           })),
     highlights:            (props.product?.highlights ?? []).map(h => ({
                                title:       h.title       ?? "",
                                description: h.description ?? "",
@@ -55,10 +72,12 @@ const form = useForm({
                                content:   s.content   ?? "",
                            })),
     media_items:             (props.product?.media_items ?? []).map(m => ({
-                               type:      m.type      ?? "image",
-                               title:     m.title      ?? "",
-                               image:     m.image      ?? "",
-                               video_url: m.video_url  ?? "",
+                               type:        m.type        ?? "image",
+                               title:       m.title       ?? "",
+                               image:       m.image       ?? "",
+                               video_url:   m.video_url   ?? "",
+                               date:        m.date        ?? "",
+                               description: m.description ?? "",
                            })),
     media_images:           (props.product?.media_items ?? []).map(() => null),
     model_overview:          (props.product?.model_overview ?? []).map(s => ({
@@ -75,6 +94,12 @@ const form = useForm({
     image:                 null,
     clear_image:           false,
     image_url:             props.product?.image_url           ?? "",
+    hero_cert_badge_1:       (() => { const v = props.product?.hero_cert_badge_1; return v?.startsWith('http') ? v : ""; })(),
+    hero_cert_badge_1_file:  null,
+    clear_hero_cert_badge_1: false,
+    hero_cert_badge_2:       (() => { const v = props.product?.hero_cert_badge_2; return v?.startsWith('http') ? v : ""; })(),
+    hero_cert_badge_2_file:  null,
+    clear_hero_cert_badge_2: false,
     video_url:             props.product?.video_url           ?? "",
 });
 
@@ -112,15 +137,42 @@ function switchImageMode(mode) {
     }
 }
 
+// Hero certification badges (fixed, max 2)
+const heroBadgeModes = ref([1, 2].map(i => {
+    const v = props.product?.[`hero_cert_badge_${i}`];
+    return v?.startsWith('http') ? 'url' : 'upload';
+}));
+const heroBadgePreviews = ref([1, 2].map(i => {
+    const v = props.product?.[`hero_cert_badge_${i}`];
+    return v && !v.startsWith('http') ? v : null;
+}));
+
+function switchHeroBadgeMode(i, mode) {
+    heroBadgeModes.value[i - 1] = mode;
+    if (mode === 'url') {
+        form[`hero_cert_badge_${i}_file`] = null;
+        heroBadgePreviews.value[i - 1] = null;
+    } else {
+        form[`hero_cert_badge_${i}`] = "";
+    }
+}
+
+function onHeroBadgeChange(i, e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    form[`hero_cert_badge_${i}_file`] = file;
+    form[`hero_cert_badge_${i}`] = "";
+    heroBadgePreviews.value[i - 1] = URL.createObjectURL(file);
+}
+
+function clearHeroBadge(i) {
+    form[`hero_cert_badge_${i}_file`]  = null;
+    form[`hero_cert_badge_${i}`]       = "";
+    form[`clear_hero_cert_badge_${i}`] = true;
+    heroBadgePreviews.value[i - 1] = null;
+}
+
 // Specs management
-function addSpec() {
-    form.specs.push({ label: "", value: "" });
-}
-
-function removeSpec(index) {
-    form.specs.splice(index, 1);
-}
-
 // Highlight section image
 const highlightImageMode = ref(
     (() => { const v = props.product?.highlight_image; return v?.startsWith('http') ? 'url' : 'upload'; })()
@@ -308,6 +360,19 @@ function removeSolution(index) {
 }
 
 // Media Center management
+const mediaTab = ref('image'); // 'image' | 'video' — splits the CRUD UI into tabs
+
+const mediaImageEntries = computed(() =>
+    form.media_items
+        .map((item, i) => ({ item, i }))
+        .filter((entry) => entry.item.type === 'image')
+);
+const mediaVideoEntries = computed(() =>
+    form.media_items
+        .map((item, i) => ({ item, i }))
+        .filter((entry) => entry.item.type === 'video')
+);
+
 const mediaImageModes = ref(
     (props.product?.media_items ?? []).map(m =>
         m.image ? (m.image.startsWith('http') ? 'url' : 'upload') : 'upload'
@@ -344,7 +409,7 @@ function clearMediaImage(i) {
 }
 
 function addMedia(type) {
-    form.media_items.push({ type, title: "", image: "", video_url: "" });
+    form.media_items.push({ type, title: "", image: "", video_url: "", date: "", description: "" });
     form.media_images.push(null);
     mediaImageModes.value.push('upload');
     mediaImagePreviews.value.push(null);
@@ -421,14 +486,23 @@ function removeDownload(index) {
 function submit() {
     if (isEdit) {
         form
-            .transform((data) => ({ ...data, _method: "PUT" }))
+            .transform((data) => ({
+                ...data,
+                specs: data.specs.filter(s => s.value.trim() !== ""),
+                _method: "PUT",
+            }))
             .post(route("admin.products.update", props.product.id), {
                 forceFormData: true,
             });
     } else {
-        form.post(route("admin.products.store"), {
-            forceFormData: true,
-        });
+        form
+            .transform((data) => ({
+                ...data,
+                specs: data.specs.filter(s => s.value.trim() !== ""),
+            }))
+            .post(route("admin.products.store"), {
+                forceFormData: true,
+            });
     }
 }
 </script>
@@ -612,39 +686,85 @@ function submit() {
                     </div>
                 </div>
 
+                <!-- Badge Sertifikasi (Hero) -->
+                <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-5">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Badge Sertifikasi (Hero)</h2>
+                    <p class="text-xs text-slate-400">Maks 2 badge bulat di pojok kanan atas section hero. Kosongkan kalau tidak ada.</p>
+
+                    <div v-for="i in [1, 2]" :key="i" class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold text-slate-700">Badge {{ i }}</p>
+                            <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                                <button type="button" @click="switchHeroBadgeMode(i, 'upload')"
+                                    class="px-2.5 py-1 transition-colors duration-150"
+                                    :class="heroBadgeModes[i - 1] === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                    Upload
+                                </button>
+                                <button type="button" @click="switchHeroBadgeMode(i, 'url')"
+                                    class="px-2.5 py-1 transition-colors duration-150"
+                                    :class="heroBadgeModes[i - 1] === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                    URL
+                                </button>
+                            </div>
+                        </div>
+
+                        <template v-if="heroBadgeModes[i - 1] === 'upload'">
+                            <div v-if="heroBadgePreviews[i - 1]"
+                                class="relative w-20 h-20 border border-gray-200 rounded bg-white">
+                                <img :src="heroBadgePreviews[i - 1]" class="w-full h-full object-contain p-2 drop-shadow" />
+                                <button type="button" @click="clearHeroBadge(i)"
+                                    class="absolute top-0.5 right-0.5 bg-red-600 hover:bg-red-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold leading-none">
+                                    ×
+                                </button>
+                            </div>
+                            <input type="file" accept="image/*"
+                                @change="onHeroBadgeChange(i, $event)"
+                                class="block text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                            <p class="text-xs text-slate-400">Bentuk gambar (persegi/lingkaran) mengikuti file asli, tidak dipaksa bulat.</p>
+                        </template>
+
+                        <template v-else>
+                            <input v-model="form[`hero_cert_badge_${i}`]" type="url"
+                                placeholder="https://example.com/badge-sertifikat.png"
+                                class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                            <div v-if="form[`hero_cert_badge_${i}`]"
+                                class="w-20 h-20 border border-gray-200 rounded bg-white">
+                                <img :src="form[`hero_cert_badge_${i}`]" class="w-full h-full object-contain p-2 drop-shadow"
+                                    @error="(e) => e.target.style.display = 'none'" />
+                            </div>
+                        </template>
+                        <p v-if="form.errors[`hero_cert_badge_${i}_file`]" class="text-xs text-red-500">{{ form.errors[`hero_cert_badge_${i}_file`] }}</p>
+                        <p v-if="form.errors[`hero_cert_badge_${i}`]" class="text-xs text-red-500">{{ form.errors[`hero_cert_badge_${i}`] }}</p>
+                    </div>
+                </div>
+
                 <!-- Specs -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Spesifikasi</h2>
-                        <button type="button" @click="addSpec"
-                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Tambah Spesifikasi
-                        </button>
-                    </div>
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Spesifikasi</h2>
+                    <p class="text-xs text-slate-400">Isi nilai yang relevan saja — kosongkan yang tidak berlaku, tidak akan ditampilkan di halaman produk. Kelima spesifikasi ini juga dipakai untuk filter di halaman katalog produk.</p>
 
-                    <p class="text-xs text-slate-400">Contoh: Label = "Kapasitas Angkat", Nilai = "1.500 kg"</p>
-
-                    <div v-if="form.specs.length" class="space-y-2">
-                        <div v-for="(spec, i) in form.specs" :key="i"
+                    <div class="space-y-2">
+                        <div v-for="spec in form.specs" :key="spec.label"
                             class="flex items-center gap-2">
-                            <input v-model="spec.label" type="text" placeholder="Label"
-                                class="w-2/5 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                            <input v-model="spec.value" type="text" placeholder="Nilai"
-                                class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                            <button type="button" @click="removeSpec(i)"
-                                class="text-red-400 hover:text-red-600 transition-colors shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
+                            <span class="w-2/5 flex items-center gap-2 text-sm text-slate-600 shrink-0">
+                                <svg v-if="SPEC_ICONS[spec.label]" class="w-5 h-5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path v-for="(d, di) in SPEC_ICONS[spec.label]" :key="di" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="d" />
                                 </svg>
-                            </button>
+                                {{ spec.label }}
+                            </span>
+                            <label v-if="BOOLEAN_SPEC_LABELS.includes(spec.label)"
+                                class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox"
+                                    :checked="spec.value === 'Ya'"
+                                    @change="spec.value = $event.target.checked ? 'Ya' : ''"
+                                    class="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-400" />
+                                <span class="text-sm text-slate-700">Ya</span>
+                            </label>
+                            <input v-else v-model="spec.value" type="text" :placeholder="`Nilai ${spec.label}, e.g. 1.500 kg`"
+                                class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
                         </div>
                     </div>
-
-                    <p v-else class="text-xs text-slate-300 italic">Belum ada spesifikasi.</p>
+                    <p v-if="form.errors.specs" class="text-xs text-red-500">{{ form.errors.specs }}</p>
                 </div>
 
                 <!-- Overview -->
@@ -1028,108 +1148,153 @@ function submit() {
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-5">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Media Center</h2>
-                        <div class="flex items-center gap-3">
-                            <button type="button" @click="addMedia('image')"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                                Tambah Gambar
-                            </button>
-                            <button type="button" @click="addMedia('video')"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                                Tambah Video
-                            </button>
-                        </div>
+                        <button type="button" @click="addMedia(mediaTab)"
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Tambah {{ mediaTab === 'video' ? 'Video' : 'Gambar' }}
+                        </button>
                     </div>
                     <p class="text-xs text-slate-400">Galeri foto & video yang tampil di section Media Center halaman produk.</p>
 
-                    <div v-if="form.media_items.length" class="space-y-3">
-                        <div v-for="(item, i) in form.media_items" :key="i"
-                            class="border border-gray-100 rounded-lg p-3 space-y-3 bg-gray-50/50">
-
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-slate-400">
-                                    {{ item.type === 'video' ? 'Video' : 'Gambar' }} {{ i + 1 }}
-                                </span>
-                                <button type="button" @click="removeMedia(i)"
-                                    class="text-red-400 hover:text-red-600 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div>
-                                <input v-model="item.title" type="text"
-                                    placeholder="Judul (opsional, ditampilkan di bawah foto/video saat lightbox)"
-                                    class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                <p v-if="form.errors[`media_items.${i}.title`]" class="text-xs text-red-500 mt-1">{{ form.errors[`media_items.${i}.title`] }}</p>
-                            </div>
-
-                            <!-- Image item -->
-                            <div v-if="item.type === 'image'" class="space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <p class="text-xs text-slate-500">Gambar</p>
-                                    <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
-                                        <button type="button" @click="switchMediaImageMode(i, 'upload')"
-                                            class="px-2.5 py-1 transition-colors duration-150"
-                                            :class="mediaImageModes[i] === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
-                                            Upload
-                                        </button>
-                                        <button type="button" @click="switchMediaImageMode(i, 'url')"
-                                            class="px-2.5 py-1 transition-colors duration-150"
-                                            :class="mediaImageModes[i] === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
-                                            URL
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <template v-if="mediaImageModes[i] === 'upload'">
-                                    <div v-if="mediaImagePreviews[i] || (item.image && !item.image.startsWith('http'))"
-                                        class="relative w-32 h-20 border border-gray-200 rounded overflow-hidden bg-white">
-                                        <img :src="mediaImagePreviews[i] || item.image"
-                                            class="w-full h-full object-cover" />
-                                        <button type="button" @click="clearMediaImage(i)"
-                                            class="absolute top-0.5 right-0.5 bg-red-600 hover:bg-red-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold leading-none">
-                                            ×
-                                        </button>
-                                    </div>
-                                    <input type="file" accept="image/*"
-                                        @change="onMediaImageChange(i, $event)"
-                                        class="block text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
-                                </template>
-
-                                <template v-else>
-                                    <input v-model="item.image" type="url"
-                                        placeholder="https://example.com/foto.jpg"
-                                        class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                    <div v-if="item.image"
-                                        class="w-32 h-20 border border-gray-200 rounded bg-white">
-                                        <img :src="item.image" class="w-full h-full object-cover"
-                                            @error="(e) => e.target.style.display = 'none'" />
-                                    </div>
-                                </template>
-                                <p v-if="form.errors[`media_images.${i}`]" class="text-xs text-red-500">{{ form.errors[`media_images.${i}`] }}</p>
-                                <p v-if="form.errors[`media_items.${i}.image`]" class="text-xs text-red-500">{{ form.errors[`media_items.${i}.image`] }}</p>
-                            </div>
-
-                            <!-- Video item -->
-                            <div v-else class="space-y-1">
-                                <p class="text-xs text-slate-500">Video</p>
-                                <input v-model="item.video_url" type="url"
-                                    placeholder="https://youtu.be/... atau link YouTube/Vimeo"
-                                    class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                <p class="text-xs text-slate-400 mt-1">Bisa pakai link share biasa dari YouTube/Vimeo, otomatis dikonversi ke format embed (sama seperti di Solusi).</p>
-                                <p v-if="form.errors[`media_items.${i}.video_url`]" class="text-xs text-red-500 mt-1">{{ form.errors[`media_items.${i}.video_url`] }}</p>
-                            </div>
-                        </div>
+                    <!-- Tabs -->
+                    <div class="flex items-center border-b border-gray-200">
+                        <button type="button" @click="mediaTab = 'image'"
+                            class="px-4 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors duration-150"
+                            :class="mediaTab === 'image' ? 'border-orange-600 text-orange-600' : 'border-transparent text-slate-400 hover:text-slate-600'">
+                            Gambar ({{ mediaImageEntries.length }})
+                        </button>
+                        <button type="button" @click="mediaTab = 'video'"
+                            class="px-4 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors duration-150"
+                            :class="mediaTab === 'video' ? 'border-orange-600 text-orange-600' : 'border-transparent text-slate-400 hover:text-slate-600'">
+                            Video ({{ mediaVideoEntries.length }})
+                        </button>
                     </div>
 
-                    <p v-else class="text-xs text-slate-300 italic">Belum ada item media.</p>
+                    <!-- Gambar tab -->
+                    <div v-if="mediaTab === 'image'">
+                        <div v-if="mediaImageEntries.length" class="space-y-3">
+                            <div v-for="(entry, n) in mediaImageEntries" :key="entry.i"
+                                class="border border-gray-100 rounded-lg p-3 space-y-3 bg-gray-50/50">
+
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-400">Gambar {{ n + 1 }}</span>
+                                    <button type="button" @click="removeMedia(entry.i)"
+                                        class="text-red-400 hover:text-red-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <input v-model="entry.item.title" type="text"
+                                        placeholder="Judul (opsional, ditampilkan di bawah foto saat lightbox)"
+                                        class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                    <p v-if="form.errors[`media_items.${entry.i}.title`]" class="text-xs text-red-500 mt-1">{{ form.errors[`media_items.${entry.i}.title`] }}</p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-xs text-slate-500">Gambar</p>
+                                        <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                                            <button type="button" @click="switchMediaImageMode(entry.i, 'upload')"
+                                                class="px-2.5 py-1 transition-colors duration-150"
+                                                :class="mediaImageModes[entry.i] === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                                Upload
+                                            </button>
+                                            <button type="button" @click="switchMediaImageMode(entry.i, 'url')"
+                                                class="px-2.5 py-1 transition-colors duration-150"
+                                                :class="mediaImageModes[entry.i] === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                                URL
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <template v-if="mediaImageModes[entry.i] === 'upload'">
+                                        <div v-if="mediaImagePreviews[entry.i] || (entry.item.image && !entry.item.image.startsWith('http'))"
+                                            class="relative w-32 h-20 border border-gray-200 rounded overflow-hidden bg-white">
+                                            <img :src="mediaImagePreviews[entry.i] || entry.item.image"
+                                                class="w-full h-full object-cover" />
+                                            <button type="button" @click="clearMediaImage(entry.i)"
+                                                class="absolute top-0.5 right-0.5 bg-red-600 hover:bg-red-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold leading-none">
+                                                ×
+                                            </button>
+                                        </div>
+                                        <input type="file" accept="image/*"
+                                            @change="onMediaImageChange(entry.i, $event)"
+                                            class="block text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                                    </template>
+
+                                    <template v-else>
+                                        <input v-model="entry.item.image" type="url"
+                                            placeholder="https://example.com/foto.jpg"
+                                            class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                        <div v-if="entry.item.image"
+                                            class="w-32 h-20 border border-gray-200 rounded bg-white">
+                                            <img :src="entry.item.image" class="w-full h-full object-cover"
+                                                @error="(e) => e.target.style.display = 'none'" />
+                                        </div>
+                                    </template>
+                                    <p v-if="form.errors[`media_images.${entry.i}`]" class="text-xs text-red-500">{{ form.errors[`media_images.${entry.i}`] }}</p>
+                                    <p v-if="form.errors[`media_items.${entry.i}.image`]" class="text-xs text-red-500">{{ form.errors[`media_items.${entry.i}.image`] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-xs text-slate-300 italic">Belum ada gambar.</p>
+                    </div>
+
+                    <!-- Video tab -->
+                    <div v-else>
+                        <div v-if="mediaVideoEntries.length" class="space-y-3">
+                            <div v-for="(entry, n) in mediaVideoEntries" :key="entry.i"
+                                class="border border-gray-100 rounded-lg p-3 space-y-3 bg-gray-50/50">
+
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-400">Video {{ n + 1 }}</span>
+                                    <button type="button" @click="removeMedia(entry.i)"
+                                        class="text-red-400 hover:text-red-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <input v-model="entry.item.title" type="text"
+                                        placeholder="Judul (ditampilkan di main video & grid video lainnya)"
+                                        class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                    <p v-if="form.errors[`media_items.${entry.i}.title`]" class="text-xs text-red-500 mt-1">{{ form.errors[`media_items.${entry.i}.title`] }}</p>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <p class="text-xs text-slate-500">Video</p>
+                                    <input v-model="entry.item.video_url" type="url"
+                                        placeholder="https://youtu.be/... atau link YouTube/Vimeo"
+                                        class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                    <p class="text-xs text-slate-400 mt-1">Bisa pakai link share biasa dari YouTube/Vimeo, otomatis dikonversi ke format embed (sama seperti di Solusi).</p>
+                                    <p v-if="form.errors[`media_items.${entry.i}.video_url`]" class="text-xs text-red-500 mt-1">{{ form.errors[`media_items.${entry.i}.video_url`] }}</p>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <p class="text-xs text-slate-500">Tanggal</p>
+                                    <input v-model="entry.item.date" type="date"
+                                        class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                    <p v-if="form.errors[`media_items.${entry.i}.date`]" class="text-xs text-red-500 mt-1">{{ form.errors[`media_items.${entry.i}.date`] }}</p>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <p class="text-xs text-slate-500">Deskripsi <span class="font-normal text-slate-400">(ditampilkan di accordion "More Information")</span></p>
+                                    <textarea v-model="entry.item.description" rows="3"
+                                        placeholder="Deskripsi singkat video..."
+                                        class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 resize-none"></textarea>
+                                    <p v-if="form.errors[`media_items.${entry.i}.description`]" class="text-xs text-red-500 mt-1">{{ form.errors[`media_items.${entry.i}.description`] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-xs text-slate-300 italic">Belum ada video.</p>
+                    </div>
                 </div>
 
                 <!-- Model Overview -->

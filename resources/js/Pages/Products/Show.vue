@@ -37,9 +37,99 @@
             </div>
         </div>
 
-        <!-- Hero -->
+        <!-- Hero: mobile = stacked flow below image, md+ = overlay on image -->
+
+        <!-- Mobile layout -->
+        <section class="md:hidden bg-white">
+            <!-- Background: image / video (plain block, not overlaid) -->
+            <div class="relative w-full h-64 overflow-hidden bg-slate-900">
+                <video
+                    v-if="product.video_url"
+                    :src="product.video_url"
+                    class="w-full h-full object-cover"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                />
+                <img
+                    v-else-if="product.image_url || product.image"
+                    :src="product.image_url || product.image"
+                    :alt="product.name"
+                    class="w-full h-full object-cover"
+                />
+            </div>
+
+            <div class="px-4 pt-6 pb-2">
+                <p class="text-sm font-bold text-slate-400 mb-2">
+                    {{ subCategory.name }}
+                </p>
+
+                <h1
+                    class="text-3xl font-bold text-slate-900 leading-tight mb-3"
+                >
+                    {{ product.name }}
+                </h1>
+
+                <p
+                    v-if="product.short_description"
+                    class="text-lg font-semibold text-slate-400 leading-snug"
+                >
+                    {{ product.short_description }}
+                </p>
+
+                <!-- Certification badges -->
+                <div
+                    v-if="heroCertBadges.length"
+                    class="flex items-center gap-3 mt-5"
+                >
+                    <div
+                        v-for="(badge, i) in heroCertBadges.slice(0, 2)"
+                        :key="i"
+                        class="w-14 h-14"
+                    >
+                        <img
+                            :src="badge.image"
+                            :alt="`${product.name} certification badge`"
+                            class="w-full h-full object-contain drop-shadow-md"
+                        />
+                    </div>
+                </div>
+
+                <!-- Specs list -->
+                <div v-if="product.specs?.length" class="w-3/5 mt-5">
+                    <div
+                        v-for="spec in product.specs.slice(0, 5)"
+                        :key="spec.label"
+                        class="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0"
+                    >
+                        <svg
+                            v-if="SPEC_ICONS[spec.label]"
+                            class="w-4 h-4 text-slate-500 shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                v-for="(d, di) in SPEC_ICONS[spec.label]"
+                                :key="di"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                :d="d"
+                            />
+                        </svg>
+                        <span class="text-sm font-semibold text-slate-600">{{
+                            spec.value
+                        }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Desktop / tablet layout -->
         <section
-            class="hero-section relative w-full overflow-hidden bg-slate-900"
+            class="hero-section relative w-full overflow-hidden bg-slate-900 hidden md:block"
         >
             <!-- Background: image / video (full cover) -->
             <div class="absolute inset-0">
@@ -67,6 +157,26 @@
             <div
                 class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"
             ></div>
+
+            <!-- Certification badges (max 2, top-right, aligned to content container) -->
+            <div
+                v-if="heroCertBadges.length"
+                class="absolute inset-x-0 top-4 lg:top-8 z-20 max-w-screen-xl mx-auto px-4 lg:px-8 flex justify-end pointer-events-none"
+            >
+                <div class="flex flex-col gap-3 pointer-events-auto">
+                    <div
+                        v-for="(badge, i) in heroCertBadges.slice(0, 2)"
+                        :key="i"
+                        class="w-16 h-16 lg:w-28 lg:h-28"
+                    >
+                        <img
+                            :src="badge.image"
+                            :alt="`${product.name} certification badge`"
+                            class="w-full h-full object-contain drop-shadow-lg"
+                        />
+                    </div>
+                </div>
+            </div>
 
             <!-- Content (full-height flex: top = heading, bottom = specs) -->
             <div
@@ -105,11 +215,24 @@
                         <div
                             v-for="spec in product.specs.slice(0, 4)"
                             :key="spec.label"
-                            class="flex items-center justify-between py-3 border-b border-white/80 last:border-0"
+                            class="flex items-center gap-3 py-3 border-b border-white/80 last:border-0"
                         >
-                            <span class="md:text-xl text-white pr-4">{{
-                                spec.label
-                            }}</span>
+                            <svg
+                                v-if="SPEC_ICONS[spec.label]"
+                                class="w-6 h-6 md:w-7 md:h-7 text-white shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    v-for="(d, di) in SPEC_ICONS[spec.label]"
+                                    :key="di"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    :d="d"
+                                />
+                            </svg>
                             <span
                                 class="md:text-xl font-bold text-white whitespace-nowrap"
                                 >{{ spec.value }}</span
@@ -176,7 +299,9 @@
 
                     <!-- Right: CTA -->
                     <a
-                        href="#inquiry"
+                        :href="whatsappCtaHref ?? '#inquiry'"
+                        :target="whatsappCtaHref ? '_blank' : undefined"
+                        :rel="whatsappCtaHref ? 'noopener' : undefined"
                         class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold px-5 py-2 transition-colors duration-200"
                     >
                         Dapatkan Penawaran
@@ -495,7 +620,7 @@
 
         <!-- Media Center -->
         <section
-            v-if="mediaItems.length"
+            v-if="mediaImages.length || mediaVideos.length"
             id="media"
             class="bg-white py-16 md:py-20 border-b border-gray-100"
         >
@@ -506,53 +631,224 @@
                     Media Center
                 </h2>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Image grid -->
+                <div
+                    v-if="mediaImages.length"
+                    class="grid grid-cols-2 md:grid-cols-4 gap-4"
+                >
                     <button
-                        v-for="(item, i) in visibleMediaItems"
+                        v-for="(img, i) in visibleMediaImages"
                         :key="i"
                         type="button"
                         @click="openLightbox(i)"
                         class="relative aspect-[331/166] overflow-hidden bg-gray-50 border border-gray-200 group"
                     >
                         <img
-                            v-if="item.thumbnail"
-                            :src="item.thumbnail"
-                            :alt="`${product.name} ${i + 1}`"
+                            :src="img.image"
+                            :alt="img.title || `${product.name} ${i + 1}`"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        <div v-else class="w-full h-full bg-slate-800"></div>
-                        <div
-                            v-if="item.type === 'video'"
-                            class="absolute inset-0 bg-black/30 flex items-center justify-center"
-                        >
-                            <span
-                                class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center"
-                            >
-                                <svg
-                                    class="w-5 h-5 text-slate-900 translate-x-0.5"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path d="M8 5v14l11-7z" />
-                                </svg>
-                            </span>
-                        </div>
                         <div
                             v-if="
-                                i === visibleMediaItems.length - 1 &&
-                                remainingMediaCount > 0
+                                i === visibleMediaImages.length - 1 &&
+                                remainingMediaImageCount > 0
                             "
                             class="absolute inset-0 bg-black/60 flex items-center justify-center"
                         >
                             <span class="text-white text-3xl font-bold"
-                                >+{{ remainingMediaCount }}</span
+                                >+{{ remainingMediaImageCount }}</span
                             >
                         </div>
                     </button>
                 </div>
+
+                <!-- Videos -->
+                <div
+                    v-if="mediaVideos.length"
+                    :class="mediaImages.length ? 'mt-16' : ''"
+                >
+                    <p
+                        class="text-lg md:text-2xl font-semibold text-slate-500 mb-10"
+                    >
+                        {{ mediaVideos.length }}
+                        {{ mediaVideos.length > 1 ? "Videos" : "Video" }}
+                    </p>
+
+                    <!-- Main video -->
+                    <div v-if="activeVideo" class="mb-10">
+                        <div class="w-full aspect-video bg-slate-100 mb-5">
+                            <iframe
+                                v-if="activeVideoEmbed"
+                                :src="activeVideoEmbed"
+                                class="w-full h-full"
+                                frameborder="0"
+                                allow="autoplay; fullscreen"
+                                allowfullscreen
+                            ></iframe>
+                        </div>
+
+                        <div
+                            class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4 mb-2"
+                        >
+                            <h3
+                                v-if="activeVideo.title"
+                                class="order-2 md:order-1 text-xl md:text-2xl font-bold text-[#302e2c]"
+                            >
+                                {{ activeVideo.title }}
+                            </h3>
+                            <div
+                                class="order-1 md:order-2 flex items-center gap-2 flex-shrink-0"
+                            >
+                                <button
+                                    type="button"
+                                    @click="downloadVideo(activeVideo)"
+                                    class="inline-flex items-center gap-1.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold px-4 py-2 transition-colors duration-150"
+                                >
+                                    Download
+                                    <svg
+                                        class="w-3.5 h-3.5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"
+                                        />
+                                    </svg>
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="shareVideo(activeVideo)"
+                                    class="w-9 h-9 flex items-center justify-center border border-gray-300 text-slate-500 hover:text-orange-600 hover:border-orange-600 transition-colors duration-150"
+                                    aria-label="Bagikan video"
+                                >
+                                    <svg
+                                        class="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M8.684 13.342a3 3 0 100-2.684m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.658m-6.632-6.342l6.632-3.658m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p
+                            v-if="videoMoreInfoOpen && activeVideo.description"
+                            class="text-slate-500 leading-relaxed mb-5 mt-10"
+                        >
+                            {{ activeVideo.description }}
+                        </p>
+
+                        <p
+                            v-if="activeVideo.date"
+                            class="text-sm text-slate-400 mb-5"
+                        >
+                            {{ activeVideo.date }}
+                        </p>
+
+                        <div
+                            v-if="activeVideo.description"
+                            class="border-b-2 border-gray-100 pb-4"
+                        >
+                            <button
+                                type="button"
+                                @click="videoMoreInfoOpen = !videoMoreInfoOpen"
+                                class="flex flex-col items-center gap-1 mx-auto text-orange-600 font-semibold text-sm transition-colors duration-150 hover:text-orange-700"
+                            >
+                                <span v-if="!videoMoreInfoOpen"
+                                    >More Information</span
+                                >
+                                <svg
+                                    class="w-8 h-8 transition-transform duration-200"
+                                    :class="{
+                                        'rotate-180': videoMoreInfoOpen,
+                                    }"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M19 9l-7 7-7-7"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Other videos grid -->
+                    <div
+                        v-if="mediaVideos.length > 1"
+                        class="grid grid-cols-2 md:grid-cols-4 gap-6"
+                    >
+                        <button
+                            v-for="(video, i) in mediaVideos"
+                            :key="i"
+                            type="button"
+                            @click="selectVideo(i)"
+                            class="text-left group"
+                        >
+                            <div
+                                class="relative aspect-video overflow-hidden bg-gray-100 mb-2"
+                            >
+                                <img
+                                    v-if="video.thumbnail"
+                                    :src="video.thumbnail"
+                                    :alt="video.title"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div
+                                    v-else
+                                    class="w-full h-full bg-slate-800"
+                                ></div>
+                                <div
+                                    class="absolute inset-0 bg-black/20 flex items-center justify-center"
+                                >
+                                    <span
+                                        class="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center"
+                                    >
+                                        <svg
+                                            class="w-4 h-4 text-slate-900 translate-x-0.5"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <p
+                                v-if="video.title"
+                                class="md:text-xl font-bold leading-snug mb-1 line-clamp-2 min-h-[2.75rem] md:min-h-[3.5rem]"
+                                :class="
+                                    i === activeVideoIndex
+                                        ? 'text-orange-600'
+                                        : 'text-[#302e2c]'
+                                "
+                            >
+                                {{ video.title }}
+                            </p>
+                            <p v-if="video.date" class="text-xs text-slate-400">
+                                {{ video.date }}
+                            </p>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Lightbox -->
+            <!-- Lightbox (images) -->
             <div
                 v-if="lightboxOpen"
                 class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
@@ -602,30 +898,16 @@
                     class="flex flex-col items-center max-w-[88vw] md:max-w-[70vw]"
                     @click.stop
                 >
-                    <div
-                        v-if="activeMediaItem?.type === 'video'"
-                        class="w-[88vw] md:w-[70vw] aspect-video"
-                    >
-                        <iframe
-                            v-if="activeMediaVideoEmbed"
-                            :src="activeMediaVideoEmbed"
-                            class="w-full h-full"
-                            frameborder="0"
-                            allow="autoplay; fullscreen"
-                            allowfullscreen
-                        ></iframe>
-                    </div>
                     <img
-                        v-else
-                        :src="activeMediaItem?.image"
+                        :src="activeLightboxImage?.image"
                         :alt="`${product.name} ${lightboxIndex + 1}`"
                         class="max-h-[75vh] max-w-[88vw] md:max-w-[70vw] object-contain"
                     />
                     <p
-                        v-if="activeMediaItem?.title"
+                        v-if="activeLightboxImage?.title"
                         class="mt-4 text-white/90 text-sm md:text-base font-medium text-center px-4"
                     >
-                        {{ activeMediaItem.title }}
+                        {{ activeLightboxImage.title }}
                     </p>
                 </div>
 
@@ -652,7 +934,7 @@
                 <div
                     class="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium"
                 >
-                    {{ lightboxIndex + 1 }} / {{ mediaItems.length }}
+                    {{ lightboxIndex + 1 }} / {{ mediaImages.length }}
                 </div>
             </div>
         </section>
@@ -777,9 +1059,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { Head } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import InquirySection from "@/Components/Public/InquirySection.vue";
+import { SPEC_ICONS } from "@/Utils/specIcons";
 
 const props = defineProps({
     product: { type: Object, required: true },
@@ -788,6 +1071,20 @@ const props = defineProps({
 });
 
 const contentMenuOpen = ref(false);
+
+const siteSettings = computed(() => usePage().props.site_settings ?? {});
+
+const whatsappCtaHref = computed(() => {
+    const wa = siteSettings.value.whatsapp;
+    if (!wa) return null;
+
+    const message =
+        props.systemCategory.slug === "sewa-forklift"
+            ? `Halo, saya tertarik untuk menyewa *${props.product.name}*. Mohon info lebih lanjut.`
+            : `Halo, saya tertarik untuk membeli *${props.product.name}*. Mohon info lebih lanjut.`;
+
+    return `https://wa.me/${wa}?text=${encodeURIComponent(message)}`;
+});
 
 const highlightIcons = [
     "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z",
@@ -801,6 +1098,12 @@ const highlightImage = computed(
         props.product.highlight_image ||
         props.product.image_url ||
         props.product.image,
+);
+
+const heroCertBadges = computed(() =>
+    [props.product.hero_cert_badge_1, props.product.hero_cert_badge_2]
+        .filter(Boolean)
+        .map((image) => ({ image })),
 );
 
 const detailFallbackIcons = [
@@ -893,39 +1196,23 @@ function getYoutubeId(url) {
     return null;
 }
 
-const mediaItems = computed(() =>
-    (props.product.media_items ?? []).map((m) => ({
-        type: m.type,
-        title: m.title || null,
-        image: m.image || null,
-        video_url: m.video_url || null,
-        thumbnail:
-            m.type === "video"
-                ? (() => {
-                      const id = getYoutubeId(m.video_url);
-                      return id
-                          ? `https://img.youtube.com/vi/${id}/hqdefault.jpg`
-                          : null;
-                  })()
-                : m.image,
-    })),
+// Media Center: images only (grid + lightbox)
+const mediaImages = computed(() =>
+    (props.product.media_items ?? [])
+        .filter((m) => m.type === "image" && m.image)
+        .map((m) => ({ image: m.image, title: m.title || null })),
 );
 
-const visibleMediaItems = computed(() => mediaItems.value.slice(0, 4));
-const remainingMediaCount = computed(() =>
-    Math.max(mediaItems.value.length - 4, 0),
+const visibleMediaImages = computed(() => mediaImages.value.slice(0, 4));
+const remainingMediaImageCount = computed(() =>
+    Math.max(mediaImages.value.length - 4, 0),
 );
 
 const lightboxOpen = ref(false);
 const lightboxIndex = ref(0);
 
-const activeMediaItem = computed(
-    () => mediaItems.value[lightboxIndex.value] ?? null,
-);
-const activeMediaVideoEmbed = computed(() =>
-    activeMediaItem.value?.type === "video"
-        ? toEmbedVideoUrl(activeMediaItem.value.video_url)
-        : null,
+const activeLightboxImage = computed(
+    () => mediaImages.value[lightboxIndex.value] ?? null,
 );
 
 function openLightbox(i) {
@@ -939,12 +1226,12 @@ function closeLightbox() {
 
 function prevMedia() {
     lightboxIndex.value =
-        (lightboxIndex.value - 1 + mediaItems.value.length) %
-        mediaItems.value.length;
+        (lightboxIndex.value - 1 + mediaImages.value.length) %
+        mediaImages.value.length;
 }
 
 function nextMedia() {
-    lightboxIndex.value = (lightboxIndex.value + 1) % mediaItems.value.length;
+    lightboxIndex.value = (lightboxIndex.value + 1) % mediaImages.value.length;
 }
 
 function onLightboxKeydown(e) {
@@ -956,6 +1243,57 @@ function onLightboxKeydown(e) {
 
 onMounted(() => window.addEventListener("keydown", onLightboxKeydown));
 onUnmounted(() => window.removeEventListener("keydown", onLightboxKeydown));
+
+// Media Center: videos (separate block below the image grid)
+const mediaVideos = computed(() =>
+    (props.product.media_items ?? [])
+        .filter((m) => m.type === "video" && m.video_url)
+        .map((m) => {
+            const id = getYoutubeId(m.video_url);
+            return {
+                title: m.title || null,
+                video_url: m.video_url,
+                date: m.date || null,
+                description: m.description || null,
+                thumbnail: id
+                    ? `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+                    : null,
+            };
+        }),
+);
+
+const activeVideoIndex = ref(0);
+const activeVideo = computed(
+    () => mediaVideos.value[activeVideoIndex.value] ?? null,
+);
+const activeVideoEmbed = computed(() =>
+    toEmbedVideoUrl(activeVideo.value?.video_url),
+);
+const videoMoreInfoOpen = ref(false);
+
+function selectVideo(i) {
+    activeVideoIndex.value = i;
+    videoMoreInfoOpen.value = false;
+}
+
+function shareVideo(video) {
+    if (!video?.video_url) return;
+    if (navigator.share) {
+        navigator
+            .share({
+                title: video.title ?? props.product.name,
+                url: video.video_url,
+            })
+            .catch(() => {});
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(video.video_url);
+    }
+}
+
+function downloadVideo(video) {
+    if (!video?.video_url) return;
+    window.open(video.video_url, "_blank", "noopener");
+}
 
 const modelOverviewRows = computed(() => {
     const items = [
@@ -998,7 +1336,7 @@ const pageSections = computed(() => {
         sections.push({ label: "Detail", href: "#detail" });
     if (solutions.value.items.length)
         sections.push({ label: "Solusi", href: "#solutions" });
-    if (mediaItems.value.length)
+    if (mediaImages.value.length || mediaVideos.value.length)
         sections.push({ label: "Media Center", href: "#media" });
     if (props.product.model_overview?.length)
         sections.push({ label: "Model Overview", href: "#model-overview" });
@@ -1012,12 +1350,6 @@ const pageSections = computed(() => {
 </script>
 
 <style scoped>
-.hero-section {
-    min-height: 560px;
-}
-.hero-content {
-    min-height: 560px;
-}
 @media (min-width: 768px) {
     .hero-section {
         min-height: 680px;

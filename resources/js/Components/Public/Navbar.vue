@@ -282,9 +282,28 @@
                                 v-for="child in activeSubItemData.children"
                                 :key="child.label"
                                 :href="child.href ?? '#'"
-                                class="text-lg text-gray-500 hover:text-orange-600 py-1.5 transition-colors duration-150"
+                                :class="[
+                                    'flex items-center justify-between gap-2 py-1.5 transition-colors duration-150',
+                                    child.icon === 'grid'
+                                        ? 'text-lg font-semibold text-orange-600 hover:text-orange-700'
+                                        : 'text-lg text-gray-500 hover:text-orange-600',
+                                ]"
                             >
-                                {{ child.label }}
+                                <span>{{ child.label }}</span>
+                                <svg
+                                    v-if="child.icon === 'grid'"
+                                    class="w-4 h-4 flex-shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"
+                                    />
+                                </svg>
                             </a>
                         </div>
                     </template>
@@ -417,9 +436,28 @@
                                     v-for="child in sub.children"
                                     :key="child.label"
                                     :href="child.href ?? '#'"
-                                    class="block py-1.5 text-gray-500 hover:text-orange-600 transition-colors"
+                                    :class="[
+                                        'flex items-center justify-between gap-2 py-1.5 transition-colors',
+                                        child.icon === 'grid'
+                                            ? 'font-semibold text-orange-600 hover:text-orange-700'
+                                            : 'text-gray-500 hover:text-orange-600',
+                                    ]"
                                 >
-                                    {{ child.label }}
+                                    <span>{{ child.label }}</span>
+                                    <svg
+                                        v-if="child.icon === 'grid'"
+                                        class="w-3.5 h-3.5 flex-shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"
+                                        />
+                                    </svg>
                                 </a>
                             </div>
                         </div>
@@ -648,6 +686,13 @@ const baseNavItems = [
     },
 ];
 
+// Default "overview" link shown first in specific category sub-menus,
+// pointing to the system category page itself (not a real ProductCategory row)
+const defaultSubMenuLinks = {
+    "Forklift Baru": "forklift",
+    "Sewa Forklift": "sewa-forklift",
+};
+
 const navItems = computed(() => {
     const base = navStructure.value.length ? navStructure.value : baseNavItems;
 
@@ -691,7 +736,22 @@ const navItems = computed(() => {
                     : route("products.sub", [c.parent_slug, c.slug]),
             }));
 
-            const allDynamic = [...dynamicFromPages, ...dynamicFromCategories];
+            const defaultSlug = defaultSubMenuLinks[sub.label];
+            const defaultItem = defaultSlug
+                ? [
+                      {
+                          label: sub.label,
+                          href: route("products.system", defaultSlug),
+                          icon: "grid",
+                      },
+                  ]
+                : [];
+
+            const allDynamic = [
+                ...defaultItem,
+                ...dynamicFromPages,
+                ...dynamicFromCategories,
+            ];
 
             return {
                 ...sub,

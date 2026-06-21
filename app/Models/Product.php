@@ -26,6 +26,8 @@ class Product extends Model
         'downloads',
         'image',
         'image_url',
+        'hero_cert_badge_1',
+        'hero_cert_badge_2',
         'video_url',
         'is_active',
     ];

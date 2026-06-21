@@ -60,7 +60,14 @@
       "Bash(php -l database/seeders/ProductSeeder.php)",
       "Bash(find . -maxdepth 1 -iname \"nixpacks.toml\" -o -maxdepth 1 -iname \"railway.json\" -o -maxdepth 1 -iname \"Procfile\")",
       "Bash(cat nixpacks.toml)",
-      "Bash(cat railway.json)"
+      "Bash(cat railway.json)",
+      "Bash(DB_HOST=thomas.proxy.rlwy.net DB_PORT=56248 DB_DATABASE=railway DB_USERNAME=root DB_PASSWORD=OMinQkrtOmalAYgNHToKkQWiFBYDDweR php artisan tinker '--execute= *)",
+      "Bash(php -l app/Http/Controllers/Admin/ProductController.php)",
+      "Bash(php -l app/Http/Requests/Admin/ProductRequest.php)",
+      "Bash(php -l app/Http/Controllers/Public/ProductController.php)",
+      "Bash(php -l app/Models/Product.php)",
+      "Bash(cat jsconfig.json)",
+      "Bash(ls *.config.js *.config.ts)"
     ]
   }
 }

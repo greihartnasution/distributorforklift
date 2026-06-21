@@ -513,48 +513,46 @@
                                     />
                                 </div>
 
-                                <!-- Specs strip (dynamic, up to 3 specs) -->
+                                <!-- Specs strip (dynamic, up to 5 specs) -->
                                 <div
                                     v-if="product.specs && product.specs.length"
-                                    class="flex items-stretch border-t border-gray-100 gap-x-2 py-4"
+                                    class="grid grid-cols-5 border-t border-gray-100 py-4"
                                 >
-                                    <template
+                                    <div
                                         v-for="(spec, i) in product.specs.slice(
                                             0,
-                                            3,
+                                            5,
                                         )"
                                         :key="i"
+                                        class="flex flex-col items-center gap-y-1 justify-center px-1.5"
+                                        :class="{
+                                            'border-l border-gray-200':
+                                                i > 0,
+                                        }"
                                     >
-                                        <div
-                                            v-if="i > 0"
-                                            class="w-px bg-gray-300 flex-shrink-0 mx-1"
-                                        ></div>
-                                        <div
-                                            class="flex flex-col items-center gap-y-1 justify-center flex-1"
+                                        <svg
+                                            v-if="SPEC_ICONS[spec.label]"
+                                            class="w-5 h-5 text-slate-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
                                         >
-                                            <svg
-                                                class="w-5 h-5 text-slate-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="1.75"
-                                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                                                />
-                                            </svg>
-                                            <span
-                                                class="text-[11px] text-slate-500 text-center leading-tight"
-                                                >{{ spec.value }}</span
-                                            >
-                                            <span
-                                                class="text-[10px] text-slate-400 text-center leading-tight"
-                                                >{{ spec.label }}</span
-                                            >
-                                        </div>
-                                    </template>
+                                            <path
+                                                v-for="(d, di) in SPEC_ICONS[
+                                                    spec.label
+                                                ]"
+                                                :key="di"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="1.5"
+                                                :d="d"
+                                            />
+                                        </svg>
+                                        <span
+                                            class="text-[11px] text-slate-500 text-center leading-tight"
+                                            >{{ spec.value }}</span
+                                        >
+                                    </div>
                                 </div>
 
                                 <!-- Name & CTA -->
@@ -589,6 +587,7 @@ import { ref, computed } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import InquirySection from "@/Components/Public/InquirySection.vue";
+import { SPEC_ICONS } from "@/Utils/specIcons";
 
 const props = defineProps({
     systemCategory: { type: Object, default: null },
