@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\NewsRequest;
 use App\Models\News;
+use App\Support\MediaUrl;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +25,7 @@ class NewsController extends Controller
                 'category'     => $n->category,
                 'is_published' => $n->is_published,
                 'published_at' => $n->published_at?->format('d M Y'),
-                'image'        => $n->image ? '/storage/' . $n->image : null,
+                'image'        => MediaUrl::resolve($n->image),
             ]);
 
         return Inertia::render('Admin/News/Index', [
@@ -48,9 +48,10 @@ class NewsController extends Controller
             $data['published_at'] = $data['is_published'] ? now() : null;
         }
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('news', 'public');
+        if ($request->hasFile('image_file')) {
+            $data['image'] = $request->file('image_file')->store('news', 'public');
         }
+        unset($data['image_file'], $data['clear_image']);
 
         News::create($data);
 
@@ -68,7 +69,7 @@ class NewsController extends Controller
                 'category'     => $news->category,
                 'excerpt'      => $news->excerpt,
                 'content'      => $news->content,
-                'image'        => $news->image ? '/storage/' . $news->image : null,
+                'image'        => MediaUrl::resolve($news->image),
                 'is_published' => $news->is_published,
                 'published_at' => $news->published_at?->format('Y-m-d'),
             ],
@@ -85,14 +86,18 @@ class NewsController extends Controller
             $data['published_at'] = now();
         }
 
-        if ($request->hasFile('image')) {
-            if ($news->image) {
-                Storage::disk('public')->delete($news->image);
-            }
-            $data['image'] = $request->file('image')->store('news', 'public');
+        if ($request->hasFile('image_file')) {
+            MediaUrl::deleteIfLocal($news->image);
+            $data['image'] = $request->file('image_file')->store('news', 'public');
+        } elseif ($request->boolean('clear_image')) {
+            MediaUrl::deleteIfLocal($news->image);
+            $data['image'] = null;
+        } elseif (!empty($data['image'])) {
+            // URL mode — value already in $data
         } else {
-            unset($data['image']);
+            unset($data['image']); // upload mode, no new file → keep existing
         }
+        unset($data['image_file'], $data['clear_image']);
 
         $news->update($data);
 
@@ -102,9 +107,7 @@ class NewsController extends Controller
 
     public function destroy(News $news): RedirectResponse
     {
-        if ($news->image) {
-            Storage::disk('public')->delete($news->image);
-        }
+        MediaUrl::deleteIfLocal($news->image);
 
         $news->delete();
 

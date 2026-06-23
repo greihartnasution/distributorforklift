@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\InquirySettingRequest;
 use App\Models\InquirySetting;
+use App\Support\MediaUrl;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,8 +30,7 @@ class InquirySettingController extends Controller
                 'consultant_company' => $inquiry->consultant_company,
                 'consultant_phone'   => $inquiry->consultant_phone,
                 'consultant_email'   => $inquiry->consultant_email,
-                'consultant_photo'   => $inquiry->consultant_photo
-                    ? '/storage/' . $inquiry->consultant_photo : null,
+                'consultant_photo'   => MediaUrl::resolve($inquiry->consultant_photo),
                 'instagram'          => $inquiry->instagram,
                 'tiktok'             => $inquiry->tiktok,
                 'youtube'            => $inquiry->youtube,
@@ -45,24 +44,20 @@ class InquirySettingController extends Controller
         $inquiry = InquirySetting::firstOrCreate([]);
         $data    = $request->validated();
 
-        if ($request->hasFile('consultant_photo')) {
-            if ($inquiry->consultant_photo) {
-                Storage::disk('public')->delete($inquiry->consultant_photo);
-            }
-            $data['consultant_photo'] = $request->file('consultant_photo')
+        if ($request->hasFile('consultant_photo_file')) {
+            MediaUrl::deleteIfLocal($inquiry->consultant_photo);
+            $data['consultant_photo'] = $request->file('consultant_photo_file')
                 ->store('inquiry', 'public');
-        } else {
-            unset($data['consultant_photo']);
-        }
-
-        if ($request->boolean('clear_photo')) {
-            if ($inquiry->consultant_photo) {
-                Storage::disk('public')->delete($inquiry->consultant_photo);
-            }
+        } elseif ($request->boolean('clear_photo')) {
+            MediaUrl::deleteIfLocal($inquiry->consultant_photo);
             $data['consultant_photo'] = null;
+        } elseif (!empty($data['consultant_photo'])) {
+            // URL mode — value already in $data
+        } else {
+            unset($data['consultant_photo']); // upload mode, no new file → keep existing
         }
+        unset($data['consultant_photo_file'], $data['clear_photo']);
 
-        unset($data['clear_photo']);
         $inquiry->update($data);
 
         return back()->with('success', 'Pengaturan Inquiry berhasil disimpan.');

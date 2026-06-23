@@ -31,7 +31,8 @@ const form = useForm({
     slug:         props.category?.slug         ?? "",
     description:  props.category?.description  ?? "",
     is_active:    props.category?.is_active    ?? true,
-    image:        null,
+    image:        (() => { const v = props.category?.image; return v?.startsWith('http') ? v : ""; })(),
+    image_file:   null,
     clear_image:  false,
     nav_group:    props.category?.nav_group    ?? "",
     nav_sub:      props.category?.nav_sub      ?? "",
@@ -47,21 +48,36 @@ watch(() => form.parent_id, (parentId) => {
     form.show_in_nav = !!defaults.nav_group;
 });
 
+const imageMode = ref(
+    (() => { const v = props.category?.image; return v?.startsWith('http') ? 'url' : 'upload'; })()
+);
 const imagePreview = ref(
-    props.category?.image ? "/storage/" + props.category.image : null
+    (() => { const v = props.category?.image; return v && !v.startsWith('http') ? '/storage/' + v : null; })()
 );
 const imageInput = ref(null);
+
+function switchImageMode(mode) {
+    imageMode.value = mode;
+    if (mode === 'url') {
+        form.image_file = null;
+        imagePreview.value = null;
+    } else {
+        form.image = "";
+    }
+}
 
 function onImageChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    form.image = file;
+    form.image_file = file;
+    form.image = "";
     form.clear_image = false;
     imagePreview.value = URL.createObjectURL(file);
 }
 
 function clearImage() {
-    form.image = null;
+    form.image_file = null;
+    form.image = "";
     form.clear_image = true;
     imagePreview.value = null;
     if (imageInput.value) imageInput.value.value = "";
@@ -195,23 +211,47 @@ function submit() {
 
                 <!-- Gambar Kategori -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
-                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Gambar Kategori</h2>
-
-                    <div v-if="imagePreview"
-                        class="relative w-48 h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
-                        <img :src="imagePreview" alt="Preview" class="w-full h-full object-cover" />
-                        <button type="button" @click="clearImage"
-                            class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
-                            ×
-                        </button>
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Gambar Kategori</h2>
+                        <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                            <button type="button" @click="switchImageMode('upload')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                Upload
+                            </button>
+                            <button type="button" @click="switchImageMode('url')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                URL Eksternal
+                            </button>
+                        </div>
                     </div>
 
-                    <div>
-                        <input ref="imageInput" type="file" accept="image/*" @change="onImageChange"
-                            class="block text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
-                        <p class="text-xs text-slate-400 mt-1">Format JPG, PNG, WebP. Maks 2 MB.</p>
-                        <p v-if="form.errors.image" class="text-xs text-red-500 mt-1">{{ form.errors.image }}</p>
-                    </div>
+                    <template v-if="imageMode === 'upload'">
+                        <div v-if="imagePreview"
+                            class="relative w-48 h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                            <img :src="imagePreview" alt="Preview" class="w-full h-full object-cover" />
+                            <button type="button" @click="clearImage"
+                                class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
+                                ×
+                            </button>
+                        </div>
+                        <div>
+                            <input ref="imageInput" type="file" accept="image/*" @change="onImageChange"
+                                class="block text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                            <p class="text-xs text-slate-400 mt-1">Format JPG, PNG, WebP. Maks 2 MB.</p>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <input v-model="form.image" type="url" placeholder="https://example.com/gambar.jpg"
+                            class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                        <div v-if="form.image" class="w-48 h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                            <img :src="form.image" class="w-full h-full object-cover"
+                                @error="(e) => e.target.style.display = 'none'" />
+                        </div>
+                    </template>
+                    <p v-if="form.errors.image" class="text-xs text-red-500 mt-1">{{ form.errors.image }}</p>
+                    <p v-if="form.errors.image_file" class="text-xs text-red-500 mt-1">{{ form.errors.image_file }}</p>
                 </div>
 
                 <!-- Pengaturan Navigasi — disembunyikan sepenuhnya, diset otomatis via watch -->

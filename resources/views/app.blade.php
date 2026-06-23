@@ -8,7 +8,9 @@
             $s           = $page['props']['site_settings'] ?? null;
             $siteName    = !empty($s?->site_name)  ? $s->site_name  : config('app.name', 'Distributor Forklift');
             $metaDesc    = !empty($s?->meta_description) ? $s->meta_description : 'Distributor forklift dan solusi material handling terpercaya untuk industri Indonesia.';
-            $ogImageUrl  = !empty($s?->og_image)   ? url('storage/' . $s->og_image) : url('static/placeholder-produk.webp');
+            $ogImageUrl  = !empty($s?->og_image)
+                ? (str_starts_with($s->og_image, 'http') ? $s->og_image : url('storage/' . $s->og_image))
+                : url('static/placeholder-produk.webp');
             $faviconUrl  = !empty($s?->favicon)    ? url('storage/' . $s->favicon)  : null;
             $canonical   = url()->current();
         @endphp

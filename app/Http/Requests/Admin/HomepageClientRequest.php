@@ -19,7 +19,9 @@ class HomepageClientRequest extends FormRequest
     {
         return [
             'name'       => ['required', 'string', 'max:255'],
-            'logo'       => ['nullable', 'image', 'max:2048'],
+            'logo'       => ['nullable', 'string', 'max:500'],
+            'logo_file'  => ['nullable', 'image', 'max:2048'],
+            'clear_logo' => ['boolean'],
             'website'    => ['nullable', 'url', 'max:255'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active'  => ['boolean'],

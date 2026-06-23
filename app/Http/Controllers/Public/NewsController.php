@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\News;
+use App\Support\MediaUrl;
 use Inertia\Inertia;
 
 class NewsController extends Controller
@@ -19,7 +20,7 @@ class NewsController extends Controller
                 'slug'     => $item->slug,
                 'category' => $item->category,
                 'excerpt'  => $item->excerpt,
-                'image'    => $item->image ? "/storage/{$item->image}" : null,
+                'image'    => MediaUrl::resolve($item->image),
                 'date'     => $item->formatted_date,
             ]);
 
@@ -41,7 +42,7 @@ class NewsController extends Controller
                 'category' => $article->category,
                 'content'  => $article->content,
                 'excerpt'  => $article->excerpt,
-                'image'    => $article->image ? "/storage/{$article->image}" : null,
+                'image'    => MediaUrl::resolve($article->image),
                 'date'     => $article->formatted_date,
             ],
         ]);

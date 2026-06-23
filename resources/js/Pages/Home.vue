@@ -105,7 +105,7 @@
                         >
                             <img
                                 v-if="slide.image"
-                                :src="`/storage/${slide.image}`"
+                                :src="slide.image"
                                 :alt="slide.title"
                                 class="w-full h-full object-cover"
                             />
@@ -428,7 +428,7 @@
                     >
                         <img
                             v-if="about.image"
-                            :src="`/storage/${about.image}`"
+                            :src="about.image"
                             :alt="about.title"
                             class="w-full h-[420px] lg:h-[480px] object-cover"
                         />

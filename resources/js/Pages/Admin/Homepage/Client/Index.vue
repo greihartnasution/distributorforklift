@@ -54,7 +54,7 @@ function destroy(id) {
 
                     <!-- Logo -->
                     <div class="w-20 h-12 shrink-0 rounded border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
-                        <img v-if="c.logo" :src="'/storage/' + c.logo" :alt="c.name"
+                        <img v-if="c.logo" :src="c.logo" :alt="c.name"
                             class="w-full h-full object-contain p-1" />
                         <svg v-else class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PageRequest;
 use App\Models\Page;
+use App\Support\MediaUrl;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,7 +24,7 @@ class PageController extends Controller
                 'nav_group'    => $p->nav_group,
                 'show_in_nav'  => $p->show_in_nav,
                 'is_published' => $p->is_published,
-                'image'        => $p->image ? '/storage/' . $p->image : null,
+                'image'        => MediaUrl::resolve($p->image),
             ]);
 
         return Inertia::render('Admin/Page/Index', [
@@ -49,9 +49,10 @@ class PageController extends Controller
             $data['published_at'] = $data['is_published'] ? now() : null;
         }
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('pages', 'public');
+        if ($request->hasFile('image_file')) {
+            $data['image'] = $request->file('image_file')->store('pages', 'public');
         }
+        unset($data['image_file'], $data['clear_image']);
 
         Page::create($data);
 
@@ -71,7 +72,7 @@ class PageController extends Controller
                 'heading'      => $page->heading,
                 'cta_text'     => $page->cta_text,
                 'cta_url'      => $page->cta_url,
-                'image'        => $page->image ? '/storage/' . $page->image : null,
+                'image'        => MediaUrl::resolve($page->image),
                 'content'      => $page->content,
                 'nav_group'    => $page->nav_group,
                 'nav_sub'      => $page->nav_sub,
@@ -96,14 +97,18 @@ class PageController extends Controller
             $data['published_at'] = now();
         }
 
-        if ($request->hasFile('image')) {
-            if ($page->image) {
-                Storage::disk('public')->delete($page->image);
-            }
-            $data['image'] = $request->file('image')->store('pages', 'public');
+        if ($request->hasFile('image_file')) {
+            MediaUrl::deleteIfLocal($page->image);
+            $data['image'] = $request->file('image_file')->store('pages', 'public');
+        } elseif ($request->boolean('clear_image')) {
+            MediaUrl::deleteIfLocal($page->image);
+            $data['image'] = null;
+        } elseif (!empty($data['image'])) {
+            // URL mode — value already in $data
         } else {
-            unset($data['image']);
+            unset($data['image']); // upload mode, no new file → keep existing
         }
+        unset($data['image_file'], $data['clear_image']);
 
         $page->update($data);
 
@@ -113,9 +118,7 @@ class PageController extends Controller
 
     public function destroy(Page $page): RedirectResponse
     {
-        if ($page->image) {
-            Storage::disk('public')->delete($page->image);
-        }
+        MediaUrl::deleteIfLocal($page->image);
 
         $page->delete();
 

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ContactPageRequest;
 use App\Models\ContactPage;
+use App\Support\MediaUrl;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,7 +24,7 @@ class ContactPageController extends Controller
                 'id'            => $contact->id,
                 'heading'       => $contact->heading,
                 'description'   => $contact->description,
-                'image'         => $contact->image ? '/storage/' . $contact->image : null,
+                'image'         => MediaUrl::resolve($contact->image),
                 'content_left'  => $contact->content_left,
                 'content_right' => $contact->content_right,
                 'show_inquiry'  => $contact->show_inquiry,
@@ -39,14 +39,18 @@ class ContactPageController extends Controller
 
         $data['show_inquiry'] = $request->boolean('show_inquiry');
 
-        if ($request->hasFile('image')) {
-            if ($contact->image) {
-                Storage::disk('public')->delete($contact->image);
-            }
-            $data['image'] = $request->file('image')->store('contact', 'public');
+        if ($request->hasFile('image_file')) {
+            MediaUrl::deleteIfLocal($contact->image);
+            $data['image'] = $request->file('image_file')->store('contact', 'public');
+        } elseif ($request->boolean('clear_image')) {
+            MediaUrl::deleteIfLocal($contact->image);
+            $data['image'] = null;
+        } elseif (!empty($data['image'])) {
+            // URL mode — value already in $data
         } else {
-            unset($data['image']);
+            unset($data['image']); // upload mode, no new file → keep existing
         }
+        unset($data['image_file'], $data['clear_image']);
 
         $contact->update($data);
 

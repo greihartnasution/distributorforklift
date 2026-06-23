@@ -14,8 +14,7 @@ class NewsRequest extends FormRequest
 
     public function rules(): array
     {
-        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
-        $newsId   = $this->route('news')?->id;
+        $newsId = $this->route('news')?->id;
 
         return [
             'title'        => ['required', 'string', 'max:255'],
@@ -23,7 +22,9 @@ class NewsRequest extends FormRequest
             'category'     => ['required', 'string', 'max:100'],
             'excerpt'      => ['nullable', 'string', 'max:500'],
             'content'      => ['required', 'string'],
-            'image'        => [$isUpdate ? 'nullable' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'image'        => ['nullable', 'string', 'max:500'],
+            'image_file'   => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'clear_image'  => ['boolean'],
             'is_published' => ['boolean'],
             'published_at' => ['nullable', 'date'],
         ];
@@ -38,6 +39,7 @@ class NewsRequest extends FormRequest
             'excerpt'      => 'Ringkasan',
             'content'      => 'Konten',
             'image'        => 'Gambar',
+            'image_file'   => 'Gambar',
             'is_published' => 'Status Publikasi',
             'published_at' => 'Tanggal Publikasi',
         ];

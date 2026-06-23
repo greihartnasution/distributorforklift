@@ -19,7 +19,9 @@ class ContactPageRequest extends FormRequest
         return [
             'heading'       => ['nullable', 'string', 'max:500'],
             'description'   => ['nullable', 'string', 'max:1000'],
-            'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'image'         => ['nullable', 'string', 'max:500'],
+            'image_file'    => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'clear_image'   => ['boolean'],
             'content_left'  => ['nullable', 'string'],
             'content_right' => ['nullable', 'string'],
             'show_inquiry'  => ['boolean'],
@@ -32,6 +34,7 @@ class ContactPageRequest extends FormRequest
             'heading'       => 'Heading',
             'description'   => 'Deskripsi',
             'image'         => 'Gambar',
+            'image_file'    => 'Gambar',
             'content_left'  => 'Konten Kolom Kiri',
             'content_right' => 'Konten Kolom Kanan',
             'show_inquiry'  => 'Sertakan Formulir Kontak',

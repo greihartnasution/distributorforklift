@@ -97,28 +97,31 @@
                 </div>
 
                 <!-- Specs list -->
-                <div v-if="product.specs?.length" class="w-3/5 mt-5">
+                <div v-if="product.specs?.length" class="w-[70%] mt-5">
                     <div
                         v-for="spec in product.specs.slice(0, 5)"
                         :key="spec.label"
-                        class="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0"
+                        class="flex items-center justify-between gap-3 py-3 border-b border-gray-100 last:border-0"
                     >
-                        <svg
-                            v-if="SPEC_ICONS[spec.label]"
-                            class="w-4 h-4 text-slate-500 shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                v-for="(d, di) in SPEC_ICONS[spec.label]"
-                                :key="di"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                                :d="d"
-                            />
-                        </svg>
+                        <span class="flex items-center gap-2 text-slate-500">
+                            <svg
+                                v-if="SPEC_ICONS[spec.label]"
+                                class="w-4 h-4 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    v-for="(d, di) in SPEC_ICONS[spec.label]"
+                                    :key="di"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    :d="d"
+                                />
+                            </svg>
+                            <span class="text-sm">{{ spec.label }}</span>
+                        </span>
                         <span class="text-sm font-semibold text-slate-600">{{
                             spec.value
                         }}</span>

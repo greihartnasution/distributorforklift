@@ -172,7 +172,7 @@ function doDelete() {
                                 >
                                     <img
                                         v-if="slider.image"
-                                        :src="`/storage/${slider.image}`"
+                                        :src="slider.image"
                                         :alt="slider.title"
                                         class="w-full h-full object-cover"
                                     />

@@ -15,7 +15,8 @@ const form = useForm({
     consultant_company:  props.inquiry.consultant_company  ?? "",
     consultant_phone:    props.inquiry.consultant_phone    ?? "",
     consultant_email:    props.inquiry.consultant_email    ?? "",
-    consultant_photo:    null,
+    consultant_photo:      (() => { const v = props.inquiry.consultant_photo; return v?.startsWith('http') ? v : ""; })(),
+    consultant_photo_file: null,
     clear_photo:         false,
     instagram:           props.inquiry.instagram           ?? "",
     tiktok:              props.inquiry.tiktok              ?? "",
@@ -23,21 +24,39 @@ const form = useForm({
     facebook:            props.inquiry.facebook            ?? "",
 });
 
-const photoPreview = ref(props.inquiry.consultant_photo ?? null);
+const photoMode = ref(
+    (() => { const v = props.inquiry.consultant_photo; return v?.startsWith('http') ? 'url' : 'upload'; })()
+);
+const photoPreview = ref(
+    (() => { const v = props.inquiry.consultant_photo; return v && !v.startsWith('http') ? v : null; })()
+);
 const photoInput   = ref(null);
+
+function switchPhotoMode(mode) {
+    photoMode.value = mode;
+    if (mode === 'url') {
+        form.consultant_photo_file = null;
+        photoPreview.value = null;
+        if (photoInput.value) photoInput.value.value = "";
+    } else {
+        form.consultant_photo = "";
+    }
+}
 
 function onPhotoChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    form.consultant_photo = file;
-    form.clear_photo      = false;
-    photoPreview.value    = URL.createObjectURL(file);
+    form.consultant_photo_file = file;
+    form.consultant_photo      = "";
+    form.clear_photo           = false;
+    photoPreview.value         = URL.createObjectURL(file);
 }
 
 function clearPhoto() {
-    form.consultant_photo = null;
-    form.clear_photo      = true;
-    photoPreview.value    = null;
+    form.consultant_photo_file = null;
+    form.consultant_photo      = "";
+    form.clear_photo           = true;
+    photoPreview.value         = null;
     if (photoInput.value) photoInput.value.value = "";
 }
 
@@ -109,18 +128,46 @@ function submit() {
 
                     <!-- Foto -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Foto Konsultan</label>
-                        <div v-if="photoPreview" class="relative w-20 h-20 mb-3">
-                            <img :src="photoPreview" alt="Foto" class="w-20 h-20 rounded-full object-cover border border-gray-200" />
-                            <button type="button" @click="clearPhoto"
-                                class="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
-                                ×
-                            </button>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-semibold text-slate-500">Foto Konsultan</label>
+                            <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                                <button type="button" @click="switchPhotoMode('upload')"
+                                    class="px-3 py-1.5 transition-colors duration-150"
+                                    :class="photoMode === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                    Upload
+                                </button>
+                                <button type="button" @click="switchPhotoMode('url')"
+                                    class="px-3 py-1.5 transition-colors duration-150"
+                                    :class="photoMode === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                    URL Eksternal
+                                </button>
+                            </div>
                         </div>
-                        <input ref="photoInput" type="file" accept="image/*" @change="onPhotoChange"
-                            class="block text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
-                        <p class="text-xs text-slate-400 mt-1">Format JPG, PNG, WebP. Maks 1 MB. Disarankan foto square.</p>
+
+                        <template v-if="photoMode === 'upload'">
+                            <div v-if="photoPreview" class="relative w-20 h-20 mb-3">
+                                <img :src="photoPreview" alt="Foto" class="w-20 h-20 rounded-full object-cover border border-gray-200" />
+                                <button type="button" @click="clearPhoto"
+                                    class="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
+                                    ×
+                                </button>
+                            </div>
+                            <input ref="photoInput" type="file" accept="image/*" @change="onPhotoChange"
+                                class="block text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                            <p class="text-xs text-slate-400 mt-1">Format JPG, PNG, WebP. Maks 1 MB. Disarankan foto square.</p>
+                        </template>
+                        <template v-else>
+                            <div class="flex items-center gap-4">
+                                <div class="w-20 h-20 rounded-full border border-gray-200 bg-gray-50 overflow-hidden shrink-0 flex items-center justify-center">
+                                    <img v-if="form.consultant_photo" :src="form.consultant_photo" class="w-full h-full object-cover"
+                                        @error="(e) => e.target.style.display = 'none'" alt="Foto" />
+                                </div>
+                                <input v-model="form.consultant_photo" type="url" placeholder="https://example.com/foto.jpg"
+                                    class="flex-1 border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors" />
+                            </div>
+                        </template>
                         <p v-if="form.errors.consultant_photo" class="mt-1 text-xs text-red-500">{{ form.errors.consultant_photo }}</p>
+                        <p v-if="form.errors.consultant_photo_file" class="mt-1 text-xs text-red-500">{{ form.errors.consultant_photo_file }}</p>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

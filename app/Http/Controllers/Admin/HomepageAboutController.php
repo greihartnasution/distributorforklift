@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\HomepageAboutRequest;
 use App\Models\HomepageAbout;
-use Illuminate\Support\Facades\Storage;
+use App\Support\MediaUrl;
 use Inertia\Inertia;
 
 class HomepageAboutController extends Controller
@@ -21,7 +21,12 @@ class HomepageAboutController extends Controller
             'show_cta'      => false,
         ]);
 
-        return Inertia::render('Admin/Homepage/Tentang', ['about' => $about]);
+        return Inertia::render('Admin/Homepage/Tentang', [
+            'about' => [
+                ...$about->toArray(),
+                'image' => MediaUrl::resolve($about->image),
+            ],
+        ]);
     }
 
     public function update(HomepageAboutRequest $request)
@@ -36,14 +41,18 @@ class HomepageAboutController extends Controller
             $data['cta_url']  = null;
         }
 
-        if ($request->hasFile('image')) {
-            if ($about->image) {
-                Storage::disk('public')->delete($about->image);
-            }
-            $data['image'] = $request->file('image')->store('homepage', 'public');
+        if ($request->hasFile('image_file')) {
+            MediaUrl::deleteIfLocal($about->image);
+            $data['image'] = $request->file('image_file')->store('homepage', 'public');
+        } elseif ($request->boolean('clear_image')) {
+            MediaUrl::deleteIfLocal($about->image);
+            $data['image'] = null;
+        } elseif (!empty($data['image'])) {
+            // URL mode — value already in $data
         } else {
-            unset($data['image']);
+            unset($data['image']); // upload mode, no new file → keep existing
         }
+        unset($data['image_file'], $data['clear_image']);
 
         $about->update($data);
 

@@ -28,11 +28,7 @@ const consultantTitle   = computed(() => props.inquiry_settings?.consultant_titl
 const consultantCompany = computed(() => props.inquiry_settings?.consultant_company || "");
 const consultantPhone   = computed(() => props.inquiry_settings?.consultant_phone   || "");
 const consultantEmail   = computed(() => props.inquiry_settings?.consultant_email   || "");
-const consultantPhoto   = computed(() =>
-    props.inquiry_settings?.consultant_photo
-        ? '/storage/' + props.inquiry_settings.consultant_photo
-        : null
-);
+const consultantPhoto   = computed(() => props.inquiry_settings?.consultant_photo || null);
 const socialInstagram = computed(() => props.inquiry_settings?.instagram || null);
 const socialTiktok    = computed(() => props.inquiry_settings?.tiktok    || null);
 const socialYoutube   = computed(() => props.inquiry_settings?.youtube   || null);

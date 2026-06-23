@@ -10,24 +10,37 @@ const form = useForm({
     show_cta: false,
     cta_text: "",
     cta_url: "",
-    image: null,
+    image: "",
+    image_file: null,
     order: 0,
     is_active: true,
 });
 
+const imageMode = ref("upload");
 const imagePreview = ref(null);
+
+function switchImageMode(mode) {
+    imageMode.value = mode;
+    if (mode === "url") {
+        form.image_file = null;
+        imagePreview.value = null;
+    } else {
+        form.image = "";
+    }
+}
 
 function onImageChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    form.image = file;
+    form.image_file = file;
+    form.image = "";
     const reader = new FileReader();
     reader.onload = (ev) => (imagePreview.value = ev.target.result);
     reader.readAsDataURL(file);
 }
 
 function clearImage() {
-    form.image = null;
+    form.image_file = null;
     imagePreview.value = null;
 }
 
@@ -101,24 +114,57 @@ function submit() {
             <form @submit.prevent="submit" class="space-y-5">
                 <!-- Upload Gambar -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5">
-                    <label
-                        class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-3"
-                    >
-                        Gambar Slide <span class="text-red-500">*</span>
-                    </label>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">
+                            Gambar Slide <span class="text-red-500">*</span>
+                        </label>
+                        <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                            <button type="button" @click="switchImageMode('upload')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                Upload
+                            </button>
+                            <button type="button" @click="switchImageMode('url')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                URL Eksternal
+                            </button>
+                        </div>
+                    </div>
 
-                    <div v-if="imagePreview" class="mb-3 relative group w-full">
-                        <img
-                            :src="imagePreview"
-                            class="w-full h-48 object-cover rounded-md"
-                        />
-                        <button
-                            type="button"
-                            @click="clearImage"
-                            class="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    <template v-if="imageMode === 'upload'">
+                        <div v-if="imagePreview" class="mb-3 relative group w-full">
+                            <img
+                                :src="imagePreview"
+                                class="w-full h-48 object-cover rounded-md"
+                            />
+                            <button
+                                type="button"
+                                @click="clearImage"
+                                class="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <svg
+                                    class="w-3.5 h-3.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2.5"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <label
+                            v-else
+                            class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-md cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors"
                         >
                             <svg
-                                class="w-3.5 h-3.5"
+                                class="w-8 h-8 text-gray-300 mb-2"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -126,49 +172,44 @@ function submit() {
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
-                                    stroke-width="2.5"
-                                    d="M6 18L18 6M6 6l12 12"
+                                    stroke-width="1.5"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                                 />
                             </svg>
-                        </button>
-                    </div>
-
-                    <label
-                        v-else
-                        class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-md cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors"
-                    >
-                        <svg
-                            class="w-8 h-8 text-gray-300 mb-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            <span class="text-xs font-medium text-slate-400"
+                                >Klik untuk upload gambar</span
+                            >
+                            <span class="text-[10px] text-slate-300 mt-0.5"
+                                >JPG, PNG, WEBP — Maks. 3MB</span
+                            >
+                            <input
+                                type="file"
+                                class="hidden"
+                                accept="image/*"
+                                @change="onImageChange"
                             />
-                        </svg>
-                        <span class="text-xs font-medium text-slate-400"
-                            >Klik untuk upload gambar</span
-                        >
-                        <span class="text-[10px] text-slate-300 mt-0.5"
-                            >JPG, PNG, WEBP — Maks. 3MB</span
-                        >
-                        <input
-                            type="file"
-                            class="hidden"
-                            accept="image/*"
-                            @change="onImageChange"
-                        />
-                    </label>
+                        </label>
+                    </template>
+                    <template v-else>
+                        <input v-model="form.image" type="url" placeholder="https://example.com/gambar.jpg"
+                            class="w-full border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors" />
+                        <div v-if="form.image" class="mt-3 w-full h-48 border border-gray-200 rounded-md overflow-hidden bg-gray-50">
+                            <img :src="form.image" class="w-full h-full object-cover"
+                                @error="(e) => e.target.style.display = 'none'" />
+                        </div>
+                    </template>
 
                     <p
                         v-if="form.errors.image"
                         class="mt-1.5 text-xs text-red-500"
                     >
                         {{ form.errors.image }}
+                    </p>
+                    <p
+                        v-if="form.errors.image_file"
+                        class="mt-1.5 text-xs text-red-500"
+                    >
+                        {{ form.errors.image_file }}
                     </p>
                 </div>
 

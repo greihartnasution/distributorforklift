@@ -12,27 +12,50 @@ const form = useForm({
     _method:       "PUT",
     heading:       props.contact.heading ?? "",
     description:   props.contact.description ?? "",
-    image:         null,
+    image:         (() => { const v = props.contact.image; return v?.startsWith('http') ? v : ""; })(),
+    image_file:    null,
+    clear_image:   false,
     content_left:  props.contact.content_left ?? "",
     content_right: props.contact.content_right ?? "",
     show_inquiry:  props.contact.show_inquiry ?? true,
 });
 
+const imageMode = ref(
+    (() => { const v = props.contact.image; return v?.startsWith('http') ? 'url' : 'upload'; })()
+);
 const imagePreview = ref(null);
-const existingImage = ref(props.contact.image ?? null);
+const existingImage = ref(
+    (() => { const v = props.contact.image; return v && !v.startsWith('http') ? v : null; })()
+);
+
+function switchImageMode(mode) {
+    imageMode.value = mode;
+    if (mode === 'url') {
+        form.image_file = null;
+        imagePreview.value = null;
+        existingImage.value = null;
+    } else {
+        form.image = "";
+    }
+}
 
 function onImageChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    form.image = file;
+    form.image_file = file;
+    form.image = "";
+    form.clear_image = false;
     const reader = new FileReader();
     reader.onload = (ev) => (imagePreview.value = ev.target.result);
     reader.readAsDataURL(file);
 }
 
 function clearNewImage() {
-    form.image = null;
+    form.image_file = null;
+    form.image = "";
+    form.clear_image = true;
     imagePreview.value = null;
+    existingImage.value = null;
 }
 
 function submit() {
@@ -81,28 +104,76 @@ function submit() {
             <form @submit.prevent="submit" class="space-y-5">
                 <!-- Gambar Hero -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5">
-                    <label
-                        class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-3"
-                        >Gambar Hero</label
-                    >
-
-                    <div v-if="imagePreview" class="mb-3 relative group w-full">
-                        <img
-                            :src="imagePreview"
-                            class="w-full h-52 object-cover rounded-md"
-                        />
-                        <div
-                            class="absolute top-2 left-2 bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded"
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide"
+                            >Gambar Hero</label
                         >
-                            Gambar Baru
+                        <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                            <button type="button" @click="switchImageMode('upload')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                Upload
+                            </button>
+                            <button type="button" @click="switchImageMode('url')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                URL Eksternal
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            @click="clearNewImage"
-                            class="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    </div>
+
+                    <template v-if="imageMode === 'upload'">
+                        <div v-if="imagePreview" class="mb-3 relative group w-full">
+                            <img
+                                :src="imagePreview"
+                                class="w-full h-52 object-cover rounded-md"
+                            />
+                            <div
+                                class="absolute top-2 left-2 bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded"
+                            >
+                                Gambar Baru
+                            </div>
+                            <button
+                                type="button"
+                                @click="clearNewImage"
+                                class="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <svg
+                                    class="w-3.5 h-3.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2.5"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div
+                            v-else-if="existingImage"
+                            class="mb-3 relative group w-full"
+                        >
+                            <img
+                                :src="existingImage"
+                                class="w-full h-52 object-cover rounded-md"
+                            />
+                            <div
+                                class="absolute top-2 left-2 bg-slate-700 text-white text-[10px] font-bold px-2 py-0.5 rounded"
+                            >
+                                Gambar Saat Ini
+                            </div>
+                        </div>
+
+                        <label
+                            class="flex items-center gap-3 w-full border border-dashed border-gray-200 rounded-md px-4 py-3 cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors"
                         >
                             <svg
-                                class="w-3.5 h-3.5"
+                                class="w-5 h-5 text-gray-300 shrink-0"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -110,64 +181,42 @@ function submit() {
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
-                                    stroke-width="2.5"
-                                    d="M6 18L18 6M6 6l12 12"
+                                    stroke-width="1.5"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                                 />
                             </svg>
-                        </button>
-                    </div>
-
-                    <div
-                        v-else-if="existingImage"
-                        class="mb-3 relative group w-full"
-                    >
-                        <img
-                            :src="existingImage"
-                            class="w-full h-52 object-cover rounded-md"
-                        />
-                        <div
-                            class="absolute top-2 left-2 bg-slate-700 text-white text-[10px] font-bold px-2 py-0.5 rounded"
-                        >
-                            Gambar Saat Ini
-                        </div>
-                    </div>
-
-                    <label
-                        class="flex items-center gap-3 w-full border border-dashed border-gray-200 rounded-md px-4 py-3 cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors"
-                    >
-                        <svg
-                            class="w-5 h-5 text-gray-300 shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                            <div>
+                                <span class="text-xs font-medium text-slate-500">{{
+                                    existingImage ? "Ganti gambar" : "Upload gambar"
+                                }}</span>
+                                <span class="text-[10px] text-slate-300 ml-1"
+                                    >JPG, PNG, WEBP — Maks. 3MB</span
+                                >
+                            </div>
+                            <input
+                                type="file"
+                                class="hidden"
+                                accept="image/*"
+                                @change="onImageChange"
                             />
-                        </svg>
-                        <div>
-                            <span class="text-xs font-medium text-slate-500">{{
-                                existingImage ? "Ganti gambar" : "Upload gambar"
-                            }}</span>
-                            <span class="text-[10px] text-slate-300 ml-1"
-                                >JPG, PNG, WEBP — Maks. 3MB</span
-                            >
+                        </label>
+                    </template>
+                    <template v-else>
+                        <input v-model="form.image" type="url" placeholder="https://example.com/gambar.jpg"
+                            class="w-full border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors" />
+                        <div v-if="form.image" class="mt-3 w-full h-52 border border-gray-200 rounded-md overflow-hidden bg-gray-50">
+                            <img :src="form.image" class="w-full h-full object-cover"
+                                @error="(e) => e.target.style.display = 'none'" />
                         </div>
-                        <input
-                            type="file"
-                            class="hidden"
-                            accept="image/*"
-                            @change="onImageChange"
-                        />
-                    </label>
+                    </template>
                     <p
                         v-if="form.errors.image"
                         class="mt-1.5 text-xs text-red-500"
                     >
                         {{ form.errors.image }}
+                    </p>
+                    <p v-if="form.errors.image_file" class="mt-1.5 text-xs text-red-500">
+                        {{ form.errors.image_file }}
                     </p>
                 </div>
 

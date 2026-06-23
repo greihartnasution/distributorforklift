@@ -96,7 +96,7 @@ function destroy(id) {
 
                                 <!-- Thumbnail -->
                                 <div class="w-12 h-12 shrink-0 rounded border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
-                                    <img v-if="sub.image" :src="'/storage/' + sub.image" :alt="sub.name"
+                                    <img v-if="sub.image" :src="sub.image.startsWith('http') ? sub.image : '/storage/' + sub.image" :alt="sub.name"
                                         class="w-full h-full object-cover" />
                                     <svg v-else class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"

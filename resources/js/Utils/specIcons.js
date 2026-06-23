@@ -1,8 +1,12 @@
 // Inline SVG path data (stroke="currentColor") for the 5 fixed product specs,
 // shared across admin form, product detail, and product catalog card.
 export const SPEC_ICONS = {
+    // Open box / package — represents load capacity (own redraw, not derived
+    // from any third-party brand asset; same family as Heroicons ArchiveBox)
     "Kapasitas Angkat": [
-        "M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9",
+        "M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5C21.75 4.254 21.246 3.75 20.625 3.75H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z",
+        "M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5",
+        "M10 11.25h4",
     ],
     "Tinggi Angkat Maks": ["M12 19.5V4.5m0 0l-6 6m6-6l6 6"],
     Otomatis: [

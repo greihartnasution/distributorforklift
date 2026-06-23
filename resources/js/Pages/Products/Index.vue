@@ -96,28 +96,38 @@
                     <aside class="produk-filter">
                         <div class="overflow-hidden sticky top-6">
                             <!-- Filter header -->
-                            <div class="flex items-center gap-3 mb-5">
-                                <div
-                                    class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                                    style="background: #f2f2f2"
-                                >
-                                    <svg
-                                        class="w-4 h-4 text-slate-500"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                            <div class="flex items-center justify-between gap-3 mb-5">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                        style="background: #f2f2f2"
                                     >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="1.75"
-                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
-                                        />
-                                    </svg>
+                                        <svg
+                                            class="w-4 h-4 text-slate-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="1.75"
+                                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <span class="text-xl font-medium text-slate-600"
+                                        >Filter</span
+                                    >
                                 </div>
-                                <span class="text-xl font-medium text-slate-600"
-                                    >Filter</span
+                                <button
+                                    v-if="hasActiveFilters"
+                                    type="button"
+                                    @click="resetFilters"
+                                    class="text-sm font-semibold text-orange-600 hover:text-orange-700 transition-colors"
                                 >
+                                    Reset
+                                </button>
                             </div>
 
                             <!-- ① Kategori -->
@@ -194,10 +204,14 @@
                                             viewBox="0 0 24 24"
                                         >
                                             <path
+                                                v-for="(d, di) in SPEC_ICONS[
+                                                    'Kapasitas Angkat'
+                                                ]"
+                                                :key="di"
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
-                                                stroke-width="1.75"
-                                                d="M12 3a3 3 0 00-3 3v1H6a1 1 0 00-1 1v11a2 2 0 002 2h10a2 2 0 002-2V8a1 1 0 00-1-1h-3V6a3 3 0 00-3-3z"
+                                                stroke-width="1.5"
+                                                :d="d"
                                             />
                                         </svg>
                                         <span
@@ -215,9 +229,9 @@
                                 >
                                     <input
                                         type="range"
-                                        min="500"
-                                        max="8000"
-                                        v-model="capacityVal"
+                                        :min="capacityBounds.min"
+                                        :max="capacityBounds.max"
+                                        v-model.number="capacityMax"
                                         class="filter-slider w-full mb-3"
                                     />
                                     <div class="flex gap-2">
@@ -227,7 +241,7 @@
                                             >
                                             <input
                                                 type="number"
-                                                placeholder="500"
+                                                v-model.number="capacityMin"
                                                 class="filter-input"
                                             />
                                             <span class="filter-input-unit"
@@ -240,7 +254,7 @@
                                             >
                                             <input
                                                 type="number"
-                                                placeholder="8000"
+                                                v-model.number="capacityMax"
                                                 class="filter-input"
                                             />
                                             <span class="filter-input-unit"
@@ -251,7 +265,7 @@
                                 </div>
                             </div>
 
-                            <!-- ② Tinggi Angkat -->
+                            <!-- ③ Tinggi Angkat Maks -->
                             <div class="border-b border-white">
                                 <button
                                     @click="toggleFilter('liftHeight')"
@@ -265,15 +279,19 @@
                                             viewBox="0 0 24 24"
                                         >
                                             <path
+                                                v-for="(d, di) in SPEC_ICONS[
+                                                    'Tinggi Angkat Maks'
+                                                ]"
+                                                :key="di"
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
-                                                stroke-width="1.75"
-                                                d="M5 3v18M19 3v18M5 12h14"
+                                                stroke-width="1.5"
+                                                :d="d"
                                             />
                                         </svg>
                                         <span
                                             class="text-lg font-bold text-slate-700"
-                                            >Tinggi Angkat (mm)</span
+                                            >Tinggi Angkat Maks (mm)</span
                                         >
                                     </div>
                                     <div class="filter-toggle-btn">
@@ -286,19 +304,32 @@
                                 >
                                     <input
                                         type="range"
-                                        min="1000"
-                                        max="12000"
-                                        v-model="liftHeightVal"
+                                        :min="liftHeightBounds.min"
+                                        :max="liftHeightBounds.max"
+                                        v-model.number="liftHeightMax"
                                         class="filter-slider w-full mb-3"
                                     />
                                     <div class="flex gap-2">
-                                        <div class="filter-input-box flex-1">
+                                        <div class="filter-input-box">
                                             <span class="filter-input-label"
                                                 >min</span
                                             >
                                             <input
                                                 type="number"
-                                                placeholder="1000"
+                                                v-model.number="liftHeightMin"
+                                                class="filter-input"
+                                            />
+                                            <span class="filter-input-unit"
+                                                >mm</span
+                                            >
+                                        </div>
+                                        <div class="filter-input-box">
+                                            <span class="filter-input-label"
+                                                >max</span
+                                            >
+                                            <input
+                                                type="number"
+                                                v-model.number="liftHeightMax"
                                                 class="filter-input"
                                             />
                                             <span class="filter-input-unit"
@@ -309,10 +340,10 @@
                                 </div>
                             </div>
 
-                            <!-- ③ Jenis Kendali -->
+                            <!-- ④ Otomatis -->
                             <div class="border-b border-white">
                                 <button
-                                    @click="toggleFilter('control')"
+                                    @click="toggleFilter('automatic')"
                                     class="filter-group-header"
                                 >
                                     <div class="flex items-center gap-3">
@@ -323,48 +354,47 @@
                                             viewBox="0 0 24 24"
                                         >
                                             <path
+                                                v-for="(d, di) in SPEC_ICONS[
+                                                    'Otomatis'
+                                                ]"
+                                                :key="di"
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
-                                                stroke-width="1.75"
-                                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"
+                                                stroke-width="1.5"
+                                                :d="d"
                                             />
                                         </svg>
                                         <span
                                             class="text-lg font-bold text-slate-700"
-                                            >Jenis Kendali</span
+                                            >Otomatis</span
                                         >
                                     </div>
                                     <div class="filter-toggle-btn">
-                                        {{ openFilters.control ? "−" : "+" }}
+                                        {{ openFilters.automatic ? "−" : "+" }}
                                     </div>
                                 </button>
                                 <div
-                                    v-if="openFilters.control"
-                                    class="px-4 py-4 space-y-2.5"
+                                    v-if="openFilters.automatic"
+                                    class="px-4 py-4"
                                 >
-                                    <label
-                                        v-for="opt in controlOptions"
-                                        :key="opt"
-                                        class="filter-checkbox-row"
-                                    >
+                                    <label class="filter-checkbox-row">
                                         <input
                                             type="checkbox"
-                                            v-model="selectedControls"
-                                            :value="opt"
+                                            v-model="onlyAutomatic"
                                             class="filter-checkbox"
                                         />
                                         <span
                                             class="lg:text-lg text-slate-600"
-                                            >{{ opt }}</span
+                                            >Tampilkan unit otomatis saja</span
                                         >
                                     </label>
                                 </div>
                             </div>
 
-                            <!-- ④ Jenis Aplikasi -->
+                            <!-- ⑤ Kecepatan Jalan -->
                             <div class="border-b border-white">
                                 <button
-                                    @click="toggleFilter('application')"
+                                    @click="toggleFilter('speed')"
                                     class="filter-group-header"
                                 >
                                     <div class="flex items-center gap-3">
@@ -375,95 +405,138 @@
                                             viewBox="0 0 24 24"
                                         >
                                             <path
+                                                v-for="(d, di) in SPEC_ICONS[
+                                                    'Kecepatan Jalan'
+                                                ]"
+                                                :key="di"
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
-                                                stroke-width="1.75"
-                                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                                stroke-width="1.5"
+                                                :d="d"
                                             />
                                         </svg>
                                         <span
                                             class="text-lg font-bold text-slate-700"
-                                            >Jenis Aplikasi</span
+                                            >Kecepatan Jalan (km/h)</span
+                                        >
+                                    </div>
+                                    <div class="filter-toggle-btn">
+                                        {{ openFilters.speed ? "−" : "+" }}
+                                    </div>
+                                </button>
+                                <div v-if="openFilters.speed" class="px-4 pb-4">
+                                    <input
+                                        type="range"
+                                        :min="speedBounds.min"
+                                        :max="speedBounds.max"
+                                        v-model.number="speedMax"
+                                        class="filter-slider w-full mb-3"
+                                    />
+                                    <div class="flex gap-2">
+                                        <div class="filter-input-box">
+                                            <span class="filter-input-label"
+                                                >min</span
+                                            >
+                                            <input
+                                                type="number"
+                                                v-model.number="speedMin"
+                                                class="filter-input"
+                                            />
+                                            <span class="filter-input-unit"
+                                                >km/h</span
+                                            >
+                                        </div>
+                                        <div class="filter-input-box">
+                                            <span class="filter-input-label"
+                                                >max</span
+                                            >
+                                            <input
+                                                type="number"
+                                                v-model.number="speedMax"
+                                                class="filter-input"
+                                            />
+                                            <span class="filter-input-unit"
+                                                >km/h</span
+                                            >
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ⑥ Kapasitas Penarik -->
+                            <div>
+                                <button
+                                    @click="toggleFilter('towCapacity')"
+                                    class="filter-group-header"
+                                >
+                                    <div class="flex items-center gap-3">
+                                        <svg
+                                            class="w-5 h-5 text-slate-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                v-for="(d, di) in SPEC_ICONS[
+                                                    'Kapasitas Penarik'
+                                                ]"
+                                                :key="di"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="1.5"
+                                                :d="d"
+                                            />
+                                        </svg>
+                                        <span
+                                            class="text-lg font-bold text-slate-700"
+                                            >Kapasitas Penarik (kg)</span
                                         >
                                     </div>
                                     <div class="filter-toggle-btn">
                                         {{
-                                            openFilters.application ? "−" : "+"
+                                            openFilters.towCapacity ? "−" : "+"
                                         }}
                                     </div>
                                 </button>
                                 <div
-                                    v-if="openFilters.application"
-                                    class="px-4 py-4 space-y-2.5"
+                                    v-if="openFilters.towCapacity"
+                                    class="px-4 pb-4"
                                 >
-                                    <label
-                                        v-for="opt in applicationOptions"
-                                        :key="opt"
-                                        class="filter-checkbox-row"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            v-model="selectedApplications"
-                                            :value="opt"
-                                            class="filter-checkbox"
-                                        />
-                                        <span
-                                            class="lg:text-lg text-slate-600"
-                                            >{{ opt }}</span
-                                        >
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- ⑤ Intensitas Penggunaan -->
-                            <div>
-                                <button
-                                    @click="toggleFilter('intensity')"
-                                    class="filter-group-header"
-                                >
-                                    <div class="flex items-center gap-3">
-                                        <svg
-                                            class="w-5 h-5 text-slate-500"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="1.75"
-                                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                                    <input
+                                        type="range"
+                                        :min="towCapacityBounds.min"
+                                        :max="towCapacityBounds.max"
+                                        v-model.number="towCapacityMax"
+                                        class="filter-slider w-full mb-3"
+                                    />
+                                    <div class="flex gap-2">
+                                        <div class="filter-input-box">
+                                            <span class="filter-input-label"
+                                                >min</span
+                                            >
+                                            <input
+                                                type="number"
+                                                v-model.number="towCapacityMin"
+                                                class="filter-input"
                                             />
-                                        </svg>
-                                        <span
-                                            class="text-lg font-bold text-slate-700"
-                                            >Intensitas Penggunaan</span
-                                        >
+                                            <span class="filter-input-unit"
+                                                >kg</span
+                                            >
+                                        </div>
+                                        <div class="filter-input-box">
+                                            <span class="filter-input-label"
+                                                >max</span
+                                            >
+                                            <input
+                                                type="number"
+                                                v-model.number="towCapacityMax"
+                                                class="filter-input"
+                                            />
+                                            <span class="filter-input-unit"
+                                                >kg</span
+                                            >
+                                        </div>
                                     </div>
-                                    <div class="filter-toggle-btn">
-                                        {{ openFilters.intensity ? "−" : "+" }}
-                                    </div>
-                                </button>
-                                <div
-                                    v-if="openFilters.intensity"
-                                    class="px-4 py-4 space-y-2.5"
-                                >
-                                    <label
-                                        v-for="opt in intensityOptions"
-                                        :key="opt"
-                                        class="filter-checkbox-row"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            v-model="selectedIntensities"
-                                            :value="opt"
-                                            class="filter-checkbox"
-                                        />
-                                        <span
-                                            class="lg:text-lg text-slate-600"
-                                            >{{ opt }}</span
-                                        >
-                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -528,6 +601,12 @@
                                         :class="{
                                             'border-l border-gray-200':
                                                 i > 0,
+                                            'pl-0': i === 0,
+                                            'pr-0':
+                                                i ===
+                                                product.specs.slice(0, 5)
+                                                    .length -
+                                                    1,
                                         }"
                                     >
                                         <svg
@@ -602,28 +681,140 @@ const openFilters = ref({
     category: true,
     capacity: false,
     liftHeight: false,
-    control: false,
-    application: false,
-    intensity: false,
+    automatic: false,
+    speed: false,
+    towCapacity: false,
 });
 function toggleFilter(key) {
     openFilters.value[key] = !openFilters.value[key];
 }
 
-const capacityVal = ref(4000);
-const liftHeightVal = ref(5000);
-const selectedControls = ref([]);
-const selectedApplications = ref([]);
-const selectedIntensities = ref([]);
+// The 5 fixed spec labels (same ones used across the product detail page)
+const SPEC_LABELS = {
+    capacity: "Kapasitas Angkat",
+    liftHeight: "Tinggi Angkat Maks",
+    automatic: "Otomatis",
+    speed: "Kecepatan Jalan",
+    towCapacity: "Kapasitas Penarik",
+};
 
-const controlOptions = ["Duduk (Seated)", "Berdiri (Standing)"];
-const applicationOptions = [
-    "Loading/unloading dock",
-    "Loading/unloading over the side",
-];
-const intensityOptions = ["Tinggi (High)", "Rendah (Low)"];
+function getSpecValue(product, label) {
+    return product.specs?.find((s) => s.label === label)?.value ?? null;
+}
 
-const displayProducts = computed(() => props.products);
+// Spec values are free-text (e.g. "1.400 kg", "7,2 km/h", "1.500 – 5.000 kg").
+// This pulls out the first number, handling ID/EU formatting (. = thousands, , = decimal).
+function parseSpecNumber(raw) {
+    if (!raw) return null;
+    const match = String(raw).match(/[\d.,]+/);
+    if (!match) return null;
+    let s = match[0];
+    if (s.includes(",")) {
+        s = s.replace(/\./g, "").replace(",", ".");
+    } else if (/\.\d{3}(\D|$)/.test(s)) {
+        s = s.replace(/\./g, "");
+    }
+    const n = parseFloat(s);
+    return Number.isNaN(n) ? null : n;
+}
+
+function specBounds(label) {
+    const vals = props.products
+        .map((p) => parseSpecNumber(getSpecValue(p, label)))
+        .filter((v) => v !== null);
+    if (!vals.length) return { min: 0, max: 0 };
+    return {
+        min: Math.floor(Math.min(...vals)),
+        max: Math.ceil(Math.max(...vals)),
+    };
+}
+
+const capacityBounds = specBounds(SPEC_LABELS.capacity);
+const liftHeightBounds = specBounds(SPEC_LABELS.liftHeight);
+const speedBounds = specBounds(SPEC_LABELS.speed);
+const towCapacityBounds = specBounds(SPEC_LABELS.towCapacity);
+
+const capacityMin = ref(capacityBounds.min);
+const capacityMax = ref(capacityBounds.max);
+const liftHeightMin = ref(liftHeightBounds.min);
+const liftHeightMax = ref(liftHeightBounds.max);
+const speedMin = ref(speedBounds.min);
+const speedMax = ref(speedBounds.max);
+const towCapacityMin = ref(towCapacityBounds.min);
+const towCapacityMax = ref(towCapacityBounds.max);
+const onlyAutomatic = ref(false);
+
+function resetFilters() {
+    capacityMin.value = capacityBounds.min;
+    capacityMax.value = capacityBounds.max;
+    liftHeightMin.value = liftHeightBounds.min;
+    liftHeightMax.value = liftHeightBounds.max;
+    speedMin.value = speedBounds.min;
+    speedMax.value = speedBounds.max;
+    towCapacityMin.value = towCapacityBounds.min;
+    towCapacityMax.value = towCapacityBounds.max;
+    onlyAutomatic.value = false;
+}
+
+const hasActiveFilters = computed(
+    () =>
+        Number(capacityMin.value) > capacityBounds.min ||
+        Number(capacityMax.value) < capacityBounds.max ||
+        Number(liftHeightMin.value) > liftHeightBounds.min ||
+        Number(liftHeightMax.value) < liftHeightBounds.max ||
+        Number(speedMin.value) > speedBounds.min ||
+        Number(speedMax.value) < speedBounds.max ||
+        Number(towCapacityMin.value) > towCapacityBounds.min ||
+        Number(towCapacityMax.value) < towCapacityBounds.max ||
+        onlyAutomatic.value,
+);
+
+// A product without a given spec filled in is never excluded by that
+// spec's filter (avoids hiding products that simply have incomplete data).
+const displayProducts = computed(() =>
+    props.products.filter((p) => {
+        const cap = parseSpecNumber(getSpecValue(p, SPEC_LABELS.capacity));
+        if (
+            cap !== null &&
+            (cap < Number(capacityMin.value) || cap > Number(capacityMax.value))
+        )
+            return false;
+
+        const height = parseSpecNumber(
+            getSpecValue(p, SPEC_LABELS.liftHeight),
+        );
+        if (
+            height !== null &&
+            (height < Number(liftHeightMin.value) ||
+                height > Number(liftHeightMax.value))
+        )
+            return false;
+
+        const speed = parseSpecNumber(getSpecValue(p, SPEC_LABELS.speed));
+        if (
+            speed !== null &&
+            (speed < Number(speedMin.value) || speed > Number(speedMax.value))
+        )
+            return false;
+
+        const tow = parseSpecNumber(
+            getSpecValue(p, SPEC_LABELS.towCapacity),
+        );
+        if (
+            tow !== null &&
+            (tow < Number(towCapacityMin.value) ||
+                tow > Number(towCapacityMax.value))
+        )
+            return false;
+
+        if (onlyAutomatic.value) {
+            if (getSpecValue(p, SPEC_LABELS.automatic) !== "Ya")
+                return false;
+        }
+
+        return true;
+    }),
+);
 </script>
 
 <style scoped>

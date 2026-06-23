@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\HomepageTestimonialRequest;
 use App\Models\HomepageTestimonial;
+use App\Support\MediaUrl;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,7 +23,7 @@ class HomepageTestimonialController extends Controller
                 'position'   => $t->position,
                 'company'    => $t->company,
                 'quote'      => $t->quote,
-                'image'      => $t->image ? '/storage/' . $t->image : null,
+                'image'      => MediaUrl::resolve($t->image),
                 'sort_order' => $t->sort_order,
                 'is_active'  => $t->is_active,
             ]),
@@ -41,9 +41,10 @@ class HomepageTestimonialController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('testimonials', 'public');
+        if ($request->hasFile('image_file')) {
+            $data['image'] = $request->file('image_file')->store('testimonials', 'public');
         }
+        unset($data['image_file'], $data['clear_image']);
 
         HomepageTestimonial::create($data);
 
@@ -60,7 +61,7 @@ class HomepageTestimonialController extends Controller
                 'position'   => $testimonial->position,
                 'company'    => $testimonial->company,
                 'quote'      => $testimonial->quote,
-                'image'      => $testimonial->image ? '/storage/' . $testimonial->image : null,
+                'image'      => MediaUrl::resolve($testimonial->image),
                 'sort_order' => $testimonial->sort_order,
                 'is_active'  => $testimonial->is_active,
             ],
@@ -71,14 +72,18 @@ class HomepageTestimonialController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('image')) {
-            if ($testimonial->image) {
-                Storage::disk('public')->delete($testimonial->image);
-            }
-            $data['image'] = $request->file('image')->store('testimonials', 'public');
+        if ($request->hasFile('image_file')) {
+            MediaUrl::deleteIfLocal($testimonial->image);
+            $data['image'] = $request->file('image_file')->store('testimonials', 'public');
+        } elseif ($request->boolean('clear_image')) {
+            MediaUrl::deleteIfLocal($testimonial->image);
+            $data['image'] = null;
+        } elseif (!empty($data['image'])) {
+            // URL mode — value already in $data
         } else {
-            unset($data['image']);
+            unset($data['image']); // upload mode, no new file → keep existing
         }
+        unset($data['image_file'], $data['clear_image']);
 
         $testimonial->update($data);
 
@@ -88,9 +93,7 @@ class HomepageTestimonialController extends Controller
 
     public function destroy(HomepageTestimonial $testimonial): RedirectResponse
     {
-        if ($testimonial->image) {
-            Storage::disk('public')->delete($testimonial->image);
-        }
+        MediaUrl::deleteIfLocal($testimonial->image);
 
         $testimonial->delete();
 

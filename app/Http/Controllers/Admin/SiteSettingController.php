@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SiteSettingRequest;
 use App\Models\SiteSetting;
+use App\Support\MediaUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -20,7 +21,7 @@ class SiteSettingController extends Controller
             'setting' => [
                 'site_name'        => $setting->site_name,
                 'meta_description' => $setting->meta_description,
-                'og_image_url'     => $setting->og_image ? '/storage/' . $setting->og_image : null,
+                'og_image_url'     => MediaUrl::resolve($setting->og_image),
                 'favicon_url'      => $setting->favicon ? '/storage/' . $setting->favicon : null,
                 'phone'            => $setting->phone,
                 'whatsapp'         => $setting->whatsapp,
@@ -39,18 +40,29 @@ class SiteSettingController extends Controller
         $setting = SiteSetting::firstOrCreate([]);
         $data    = $request->validated();
 
-        foreach (['og_image', 'favicon'] as $field) {
-            if ($request->hasFile($field)) {
-                if ($setting->$field) Storage::disk('public')->delete($setting->$field);
-                $data[$field] = $request->file($field)->store('seo', 'public');
-            } else {
-                unset($data[$field]);
-            }
+        if ($request->hasFile('og_image_file')) {
+            MediaUrl::deleteIfLocal($setting->og_image);
+            $data['og_image'] = $request->file('og_image_file')->store('seo', 'public');
+        } elseif ($request->boolean('clear_og_image')) {
+            MediaUrl::deleteIfLocal($setting->og_image);
+            $data['og_image'] = null;
+        } elseif (!empty($data['og_image'])) {
+            // URL mode — value already in $data
+        } else {
+            unset($data['og_image']); // upload mode, no new file → keep existing
+        }
+        unset($data['og_image_file'], $data['clear_og_image']);
 
-            if ($request->boolean('clear_' . $field)) {
-                if ($setting->$field) Storage::disk('public')->delete($setting->$field);
-                $data[$field] = null;
-            }
+        if ($request->hasFile('favicon')) {
+            if ($setting->favicon) Storage::disk('public')->delete($setting->favicon);
+            $data['favicon'] = $request->file('favicon')->store('seo', 'public');
+        } else {
+            unset($data['favicon']);
+        }
+
+        if ($request->boolean('clear_favicon')) {
+            if ($setting->favicon) Storage::disk('public')->delete($setting->favicon);
+            $data['favicon'] = null;
         }
 
         $setting->update($data);

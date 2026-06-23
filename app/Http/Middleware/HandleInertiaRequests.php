@@ -7,6 +7,7 @@ use App\Models\NavItem;
 use App\Models\Page;
 use App\Models\ProductCategory;
 use App\Models\SiteSetting;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,7 +42,17 @@ class HandleInertiaRequests extends Middleware
             ],
             'site_settings' => fn () => SiteSetting::first() ?? (object)[],
 
-            'inquiry_settings' => fn () => InquirySetting::first() ?? (object)[],
+            'inquiry_settings' => function () {
+                $inquiry = InquirySetting::first();
+                if (! $inquiry) {
+                    return (object) [];
+                }
+
+                return [
+                    ...$inquiry->toArray(),
+                    'consultant_photo' => MediaUrl::resolve($inquiry->consultant_photo),
+                ];
+            },
 
             'nav_pages' => fn () => Page::where('is_published', true)
                 ->where('show_in_nav', true)

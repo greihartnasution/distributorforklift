@@ -18,6 +18,7 @@ use App\Http\Controllers\Public\ProductController as PublicProductController;
 use App\Http\Controllers\Public\NewsController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\ProfileController;
+use App\Support\MediaUrl;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -25,9 +26,16 @@ use Inertia\Inertia;
 Route::get('/', function () {
     $sliders = \App\Models\HeroSlider::where('is_active', true)
         ->orderBy('order')
-        ->get();
+        ->get()
+        ->map(fn ($s) => [
+            ...$s->toArray(),
+            'image' => MediaUrl::resolve($s->image),
+        ]);
 
     $about = \App\Models\HomepageAbout::first();
+    if ($about) {
+        $about->image = MediaUrl::resolve($about->image);
+    }
 
     $news = \App\Models\News::where('is_published', true)
         ->orderByDesc('published_at')
@@ -39,7 +47,7 @@ Route::get('/', function () {
             'date'     => $n->formatted_date,
             'title'    => $n->title,
             'excerpt'  => $n->excerpt,
-            'image'    => $n->image ? '/storage/' . $n->image : null,
+            'image'    => MediaUrl::resolve($n->image),
         ]);
 
     $testimonials = \App\Models\HomepageTestimonial::where('is_active', true)
@@ -50,7 +58,7 @@ Route::get('/', function () {
             'position' => $t->position,
             'company'  => $t->company,
             'quote'    => $t->quote,
-            'image'    => $t->image ? '/storage/' . $t->image : null,
+            'image'    => MediaUrl::resolve($t->image),
         ]);
 
     $clients = \App\Models\HomepageClient::where('is_active', true)
@@ -58,7 +66,7 @@ Route::get('/', function () {
         ->get()
         ->map(fn ($c) => [
             'name'    => $c->name,
-            'logo'    => $c->logo ? '/storage/' . $c->logo : null,
+            'logo'    => MediaUrl::resolve($c->logo),
             'website' => $c->website,
         ]);
 
@@ -67,7 +75,7 @@ Route::get('/', function () {
     $slot = fn ($r, $p) => [
         'title'       => $showcases->get("{$r}_{$p}")?->title,
         'description' => $showcases->get("{$r}_{$p}")?->description,
-        'image'       => $showcases->get("{$r}_{$p}")?->image ? '/storage/' . $showcases->get("{$r}_{$p}")->image : null,
+        'image'       => MediaUrl::resolve($showcases->get("{$r}_{$p}")?->image),
         'href'        => $showcases->get("{$r}_{$p}")?->href,
     ];
 

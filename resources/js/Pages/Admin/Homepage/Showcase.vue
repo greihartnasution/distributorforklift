@@ -14,13 +14,15 @@ const buildCards = () => {
     for (let r = 1; r <= 3; r++) {
         for (let p = 1; p <= 3; p++) {
             const slot = props.rows?.[r]?.[p] ?? {};
+            const img  = slot.image ?? "";
             cards.push({
                 row:         r,
                 position:    p,
                 title:       slot.title       ?? "",
                 description: slot.description ?? "",
                 href:        slot.href        ?? "",
-                image:       null,
+                image:       img.startsWith("http") ? img : "",
+                image_file:  null,
                 clear_image: false,
             });
         }
@@ -34,26 +36,53 @@ const form = useForm({
     cards:   buildCards(),
 });
 
-// Image previews: index = (row-1)*3 + (position-1)
+function cardIndex(row, position) {
+    return (row - 1) * 3 + (position - 1);
+}
+
+// Per-card mode: 'upload' or 'url'
+const imageModes = ref(
+    (() => {
+        const m = [];
+        for (let r = 1; r <= 3; r++)
+            for (let pos = 1; pos <= 3; pos++) {
+                const img = props.rows?.[r]?.[pos]?.image ?? "";
+                m.push(img.startsWith("http") ? "url" : "upload");
+            }
+        return m;
+    })()
+);
+
+// Per-card upload preview (only relevant in upload mode)
 const previews = ref(
     (() => {
         const p = [];
         for (let r = 1; r <= 3; r++)
-            for (let pos = 1; pos <= 3; pos++)
-                p.push(props.rows?.[r]?.[pos]?.image ?? null);
+            for (let pos = 1; pos <= 3; pos++) {
+                const img = props.rows?.[r]?.[pos]?.image ?? "";
+                p.push(img && !img.startsWith("http") ? img : null);
+            }
         return p;
     })()
 );
 
-function cardIndex(row, position) {
-    return (row - 1) * 3 + (position - 1);
+function switchImageMode(row, position, mode) {
+    const idx = cardIndex(row, position);
+    imageModes.value[idx] = mode;
+    if (mode === "url") {
+        form.cards[idx].image_file = null;
+        previews.value[idx] = null;
+    } else {
+        form.cards[idx].image = "";
+    }
 }
 
 function onImageChange(row, position, e) {
     const idx  = cardIndex(row, position);
     const file = e.target.files[0];
     if (!file) return;
-    form.cards[idx].image       = file;
+    form.cards[idx].image_file  = file;
+    form.cards[idx].image       = "";
     form.cards[idx].clear_image = false;
     const reader = new FileReader();
     reader.onload = (ev) => (previews.value[idx] = ev.target.result);
@@ -62,7 +91,8 @@ function onImageChange(row, position, e) {
 
 function clearImage(row, position) {
     const idx = cardIndex(row, position);
-    form.cards[idx].image       = null;
+    form.cards[idx].image_file  = null;
+    form.cards[idx].image       = "";
     form.cards[idx].clear_image = true;
     previews.value[idx]         = null;
 }
@@ -132,25 +162,59 @@ const ROW_LABELS = ["Baris 1 — 3 Kolom", "Baris 2 — Wide + 2 Kolom", "Baris 
                             </p>
 
                             <!-- Image -->
-                            <div>
-                                <div v-if="previews[cardIndex(row, pos)]" class="mb-2 relative group">
-                                    <img :src="previews[cardIndex(row, pos)]"
-                                        class="w-full h-32 object-cover rounded" />
-                                    <button type="button" @click="clearImage(row, pos)"
-                                        class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs">
-                                        ✕
-                                    </button>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Gambar</span>
+                                    <div class="flex items-center border border-gray-200 rounded overflow-hidden text-[10px] font-semibold">
+                                        <button type="button" @click="switchImageMode(row, pos, 'upload')"
+                                            class="px-2 py-1 transition-colors duration-150"
+                                            :class="imageModes[cardIndex(row, pos)] === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                            Upload
+                                        </button>
+                                        <button type="button" @click="switchImageMode(row, pos, 'url')"
+                                            class="px-2 py-1 transition-colors duration-150"
+                                            :class="imageModes[cardIndex(row, pos)] === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                            URL
+                                        </button>
+                                    </div>
                                 </div>
-                                <label class="flex items-center gap-2 w-full border border-dashed border-gray-200 rounded px-3 py-2 cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors">
-                                    <svg class="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                    </svg>
-                                    <span class="text-xs text-slate-400">
-                                        {{ previews[cardIndex(row, pos)] ? "Ganti gambar" : "Upload gambar" }}
-                                    </span>
-                                    <input type="file" class="hidden" accept="image/*"
-                                        @change="onImageChange(row, pos, $event)" />
-                                </label>
+
+                                <template v-if="imageModes[cardIndex(row, pos)] === 'upload'">
+                                    <div v-if="previews[cardIndex(row, pos)]" class="mb-2 relative group">
+                                        <img :src="previews[cardIndex(row, pos)]"
+                                            class="w-full h-32 object-cover rounded" />
+                                        <button type="button" @click="clearImage(row, pos)"
+                                            class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs">
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <label class="flex items-center gap-2 w-full border border-dashed border-gray-200 rounded px-3 py-2 cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors">
+                                        <svg class="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
+                                        <span class="text-xs text-slate-400">
+                                            {{ previews[cardIndex(row, pos)] ? "Ganti gambar" : "Upload gambar" }}
+                                        </span>
+                                        <input type="file" class="hidden" accept="image/*"
+                                            @change="onImageChange(row, pos, $event)" />
+                                    </label>
+                                </template>
+                                <template v-else>
+                                    <input v-model="form.cards[cardIndex(row, pos)].image" type="url"
+                                        placeholder="https://example.com/gambar.jpg"
+                                        class="w-full border border-gray-200 px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded" />
+                                    <div v-if="form.cards[cardIndex(row, pos)].image"
+                                        class="w-full h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                                        <img :src="form.cards[cardIndex(row, pos)].image" class="w-full h-full object-cover"
+                                            @error="(e) => e.target.style.display = 'none'" />
+                                    </div>
+                                </template>
+                                <p v-if="form.errors[`cards.${cardIndex(row, pos)}.image`]" class="text-xs text-red-500">
+                                    {{ form.errors[`cards.${cardIndex(row, pos)}.image`] }}
+                                </p>
+                                <p v-if="form.errors[`cards.${cardIndex(row, pos)}.image_file`]" class="text-xs text-red-500">
+                                    {{ form.errors[`cards.${cardIndex(row, pos)}.image_file`] }}
+                                </p>
                             </div>
 
                             <!-- Title -->

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductCategoryRequest;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use Illuminate\Support\Facades\Storage;
+use App\Support\MediaUrl;
 use Inertia\Inertia;
 
 class ProductCategoryController extends Controller
@@ -39,9 +39,10 @@ class ProductCategoryController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('product-categories', 'public');
+        if ($request->hasFile('image_file')) {
+            $data['image'] = $request->file('image_file')->store('product-categories', 'public');
         }
+        unset($data['image_file'], $data['clear_image']);
 
         ProductCategory::create($data);
 
@@ -62,17 +63,18 @@ class ProductCategoryController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('image')) {
-            if ($category->image) Storage::disk('public')->delete($category->image);
-            $data['image'] = $request->file('image')->store('product-categories', 'public');
-        } else {
-            unset($data['image']);
-        }
-
-        if ($request->boolean('clear_image')) {
-            if ($category->image) Storage::disk('public')->delete($category->image);
+        if ($request->hasFile('image_file')) {
+            MediaUrl::deleteIfLocal($category->image);
+            $data['image'] = $request->file('image_file')->store('product-categories', 'public');
+        } elseif ($request->boolean('clear_image')) {
+            MediaUrl::deleteIfLocal($category->image);
             $data['image'] = null;
+        } elseif (!empty($data['image'])) {
+            // URL mode — value already in $data
+        } else {
+            unset($data['image']); // upload mode, no new file → keep existing
         }
+        unset($data['image_file'], $data['clear_image']);
 
         $category->update($data);
 
@@ -92,7 +94,7 @@ class ProductCategoryController extends Controller
                 ->with('error', 'Kategori tidak dapat dihapus karena masih memiliki produk.');
         }
 
-        if ($category->image) Storage::disk('public')->delete($category->image);
+        MediaUrl::deleteIfLocal($category->image);
         $category->delete();
 
         return redirect()->route('admin.product-categories.index')

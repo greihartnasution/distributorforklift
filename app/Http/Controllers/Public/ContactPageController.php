@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContactPage;
+use App\Support\MediaUrl;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +17,7 @@ class ContactPageController extends Controller
         $page = $contact ? [
             'heading'       => $contact->heading,
             'description'   => $contact->description,
-            'image'         => $contact->image ? '/storage/' . $contact->image : null,
+            'image'         => MediaUrl::resolve($contact->image),
             'content_left'  => $contact->content_left,
             'content_right' => $contact->content_right,
             'show_inquiry'  => $contact->show_inquiry,

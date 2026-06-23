@@ -9,7 +9,8 @@ const form = useForm({
     _method:          "PUT",
     site_name:        props.setting.site_name        ?? "",
     meta_description: props.setting.meta_description ?? "",
-    og_image:         null,
+    og_image:         (() => { const v = props.setting.og_image_url; return v?.startsWith('http') ? v : ""; })(),
+    og_image_file:    null,
     clear_og_image:   false,
     favicon:          null,
     clear_favicon:    false,
@@ -23,20 +24,38 @@ const form = useForm({
     facebook:         props.setting.facebook  ?? "",
 });
 
-const ogPreview      = ref(props.setting.og_image_url ?? null);
+const ogImageMode = ref(
+    (() => { const v = props.setting.og_image_url; return v?.startsWith('http') ? 'url' : 'upload'; })()
+);
+const ogPreview = ref(
+    (() => { const v = props.setting.og_image_url; return v && !v.startsWith('http') ? v : null; })()
+);
 const faviconPreview = ref(props.setting.favicon_url  ?? null);
 const ogInput        = ref(null);
 const faviconInput   = ref(null);
 
+function switchOgImageMode(mode) {
+    ogImageMode.value = mode;
+    if (mode === 'url') {
+        form.og_image_file = null;
+        ogPreview.value = null;
+        if (ogInput.value) ogInput.value.value = "";
+    } else {
+        form.og_image = "";
+    }
+}
+
 function onOgChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    form.og_image       = file;
+    form.og_image_file  = file;
+    form.og_image       = "";
     form.clear_og_image = false;
     ogPreview.value     = URL.createObjectURL(file);
 }
 function clearOg() {
-    form.og_image       = null;
+    form.og_image_file  = null;
+    form.og_image       = "";
     form.clear_og_image = true;
     ogPreview.value     = null;
     if (ogInput.value) ogInput.value.value = "";
@@ -114,19 +133,45 @@ function submit() {
 
                     <!-- OG Image -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">
-                            OG Image (Social Share)
-                            <span class="font-normal text-slate-400 ml-1">— ukuran ideal 1200×630 px</span>
-                        </label>
-                        <div v-if="ogPreview" class="relative mb-2 w-full max-w-xs">
-                            <img :src="ogPreview" alt="OG Preview" class="w-full rounded border border-gray-200 object-cover" style="aspect-ratio:1200/630" />
-                            <button type="button" @click="clearOg"
-                                class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">×</button>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-semibold text-slate-500">
+                                OG Image (Social Share)
+                                <span class="font-normal text-slate-400 ml-1">— ukuran ideal 1200×630 px</span>
+                            </label>
+                            <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                                <button type="button" @click="switchOgImageMode('upload')"
+                                    class="px-3 py-1.5 transition-colors duration-150"
+                                    :class="ogImageMode === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                    Upload
+                                </button>
+                                <button type="button" @click="switchOgImageMode('url')"
+                                    class="px-3 py-1.5 transition-colors duration-150"
+                                    :class="ogImageMode === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                    URL Eksternal
+                                </button>
+                            </div>
                         </div>
-                        <input ref="ogInput" type="file" accept="image/*" @change="onOgChange"
-                            class="block text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
-                        <p class="text-[10px] text-slate-400 mt-1">JPG, PNG, WebP. Maks 1.5 MB.</p>
+
+                        <template v-if="ogImageMode === 'upload'">
+                            <div v-if="ogPreview" class="relative mb-2 w-full max-w-xs">
+                                <img :src="ogPreview" alt="OG Preview" class="w-full rounded border border-gray-200 object-cover" style="aspect-ratio:1200/630" />
+                                <button type="button" @click="clearOg"
+                                    class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">×</button>
+                            </div>
+                            <input ref="ogInput" type="file" accept="image/*" @change="onOgChange"
+                                class="block text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                            <p class="text-[10px] text-slate-400 mt-1">JPG, PNG, WebP. Maks 1.5 MB.</p>
+                        </template>
+                        <template v-else>
+                            <input v-model="form.og_image" type="url" placeholder="https://example.com/og-image.jpg"
+                                class="w-full border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors" />
+                            <div v-if="form.og_image" class="mt-2 w-full max-w-xs rounded border border-gray-200 overflow-hidden bg-gray-50" style="aspect-ratio:1200/630">
+                                <img :src="form.og_image" class="w-full h-full object-cover"
+                                    @error="(e) => e.target.style.display = 'none'" />
+                            </div>
+                        </template>
                         <p v-if="form.errors.og_image" class="text-xs text-red-500 mt-1">{{ form.errors.og_image }}</p>
+                        <p v-if="form.errors.og_image_file" class="text-xs text-red-500 mt-1">{{ form.errors.og_image_file }}</p>
                     </div>
 
                     <!-- Favicon -->

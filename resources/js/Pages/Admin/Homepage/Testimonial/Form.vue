@@ -15,25 +15,45 @@ const form = useForm({
     position:    props.testimonial?.position    ?? "",
     company:     props.testimonial?.company     ?? "",
     quote:       props.testimonial?.quote       ?? "",
-    image:       null,
+    image:       (() => { const v = props.testimonial?.image; return v?.startsWith('http') ? v : ""; })(),
+    image_file:  null,
+    clear_image: false,
     sort_order:  props.testimonial?.sort_order  ?? 0,
     is_active:   props.testimonial?.is_active   ?? true,
 });
 
-const imagePreview = ref(null);
-const existingImage = ref(props.testimonial?.image ?? null);
+const imageMode = ref(
+    (() => { const v = props.testimonial?.image; return v?.startsWith('http') ? 'url' : 'upload'; })()
+);
+const imagePreview = ref(
+    (() => { const v = props.testimonial?.image; return v && !v.startsWith('http') ? v : null; })()
+);
+
+function switchImageMode(mode) {
+    imageMode.value = mode;
+    if (mode === 'url') {
+        form.image_file = null;
+        imagePreview.value = null;
+    } else {
+        form.image = "";
+    }
+}
 
 function onImageChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    form.image = file;
+    form.image_file = file;
+    form.image = "";
+    form.clear_image = false;
     const reader = new FileReader();
     reader.onload = (ev) => (imagePreview.value = ev.target.result);
     reader.readAsDataURL(file);
 }
 
 function clearImage() {
-    form.image = null;
+    form.image_file = null;
+    form.image = "";
+    form.clear_image = true;
     imagePreview.value = null;
 }
 
@@ -80,36 +100,66 @@ function submit() {
 
                 <!-- Foto -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5">
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-3">Foto Testimoner</label>
-
-                    <div class="flex items-center gap-5">
-                        <!-- Preview circle -->
-                        <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 shrink-0 bg-gray-50 flex items-center justify-center relative group">
-                            <img v-if="imagePreview || existingImage"
-                                :src="imagePreview || existingImage"
-                                class="w-full h-full object-cover" alt="Preview" />
-                            <svg v-else class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <button v-if="imagePreview || existingImage" type="button" @click="clearImage"
-                                class="absolute inset-0 bg-black/50 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                Hapus
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Foto Testimoner</label>
+                        <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                            <button type="button" @click="switchImageMode('upload')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                Upload
+                            </button>
+                            <button type="button" @click="switchImageMode('url')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="imageMode === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                URL Eksternal
                             </button>
                         </div>
-
-                        <!-- Upload -->
-                        <label class="flex-1 flex items-center gap-3 border border-dashed border-gray-200 rounded-md px-4 py-3 cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors">
-                            <svg class="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
-                            <div>
-                                <span class="text-xs font-medium text-slate-500">Upload foto</span>
-                                <span class="text-[10px] text-slate-300 ml-1">JPG, PNG, WEBP — Maks. 2MB</span>
-                            </div>
-                            <input type="file" class="hidden" accept="image/*" @change="onImageChange" />
-                        </label>
                     </div>
+
+                    <template v-if="imageMode === 'upload'">
+                        <div class="flex items-center gap-5">
+                            <!-- Preview circle -->
+                            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 shrink-0 bg-gray-50 flex items-center justify-center relative group">
+                                <img v-if="imagePreview"
+                                    :src="imagePreview"
+                                    class="w-full h-full object-cover" alt="Preview" />
+                                <svg v-else class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <button v-if="imagePreview" type="button" @click="clearImage"
+                                    class="absolute inset-0 bg-black/50 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    Hapus
+                                </button>
+                            </div>
+
+                            <!-- Upload -->
+                            <label class="flex-1 flex items-center gap-3 border border-dashed border-gray-200 rounded-md px-4 py-3 cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-colors">
+                                <svg class="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <div>
+                                    <span class="text-xs font-medium text-slate-500">Upload foto</span>
+                                    <span class="text-[10px] text-slate-300 ml-1">JPG, PNG, WEBP — Maks. 2MB</span>
+                                </div>
+                                <input type="file" class="hidden" accept="image/*" @change="onImageChange" />
+                            </label>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="flex items-center gap-5">
+                            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 shrink-0 bg-gray-50 flex items-center justify-center">
+                                <img v-if="form.image" :src="form.image" class="w-full h-full object-cover"
+                                    @error="(e) => e.target.style.display = 'none'" alt="Preview" />
+                                <svg v-else class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <input v-model="form.image" type="url" placeholder="https://example.com/foto.jpg"
+                                class="flex-1 border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors" />
+                        </div>
+                    </template>
                     <p v-if="form.errors.image" class="mt-1.5 text-xs text-red-500">{{ form.errors.image }}</p>
+                    <p v-if="form.errors.image_file" class="mt-1.5 text-xs text-red-500">{{ form.errors.image_file }}</p>
                 </div>
 
                 <!-- Info -->

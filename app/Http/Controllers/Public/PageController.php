@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Support\MediaUrl;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,7 +24,7 @@ class PageController extends Controller
                 'heading'      => $page->heading,
                 'cta_text'     => $page->cta_text,
                 'cta_url'      => $page->cta_url,
-                'image'        => $page->image ? '/storage/' . $page->image : null,
+                'image'        => MediaUrl::resolve($page->image),
                 'content'      => $page->content,
                 'show_inquiry' => $page->show_inquiry,
                 'nav_group'    => $page->nav_group,
