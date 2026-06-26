@@ -299,4 +299,9 @@ const breadcrumbSub = computed(() => {
     font-style: italic;
     margin: 1.5rem 0;
 }
+.page-content :deep(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
 </style>

@@ -151,4 +151,9 @@ defineProps({
 .about-long-desc :deep(em) {
     font-style: italic;
 }
+.about-long-desc :deep(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
 </style>

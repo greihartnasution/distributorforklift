@@ -19,10 +19,19 @@ class ProductController extends Controller
             'slug'             => $p->slug,
             'short_description'=> $p->short_description,
             'specs'            => $p->specs ?? [],
-            'image'            => $p->image ? '/storage/' . $p->image : null,
+            'image'            => $this->resolveCardImage($p),
             'category_slug'    => $p->category?->slug,
             'system_slug'      => $systemSlug,
         ];
+    }
+
+    private function resolveCardImage(Product $p): ?string
+    {
+        if ($p->thumbnail) return '/storage/' . $p->thumbnail;
+        if ($p->thumbnail_url) return $p->thumbnail_url;
+        if ($p->image) return '/storage/' . $p->image;
+        if ($p->image_url) return $p->image_url;
+        return null;
     }
 
     private function mapHero(ProductCategory $cat, ?ProductCategory $system = null): array

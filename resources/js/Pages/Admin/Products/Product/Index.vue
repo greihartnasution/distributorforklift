@@ -111,7 +111,7 @@ function destroy(id) {
                             <!-- Thumbnail -->
                             <td class="px-4 py-3">
                                 <div class="w-12 h-12 rounded border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
-                                    <img v-if="p.image" :src="p.image" :alt="p.name"
+                                    <img v-if="p.thumbnail || p.image" :src="p.thumbnail ?? p.image" :alt="p.name"
                                         class="w-full h-full object-cover" />
                                     <svg v-else class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"

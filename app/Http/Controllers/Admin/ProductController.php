@@ -26,6 +26,7 @@ class ProductController extends Controller
                     'id'            => $p->id,
                     'name'          => $p->name,
                     'slug'          => $p->slug,
+                    'thumbnail'     => $p->thumbnail ? '/storage/' . $p->thumbnail : ($p->thumbnail_url ?: null),
                     'image'         => $p->image ? '/storage/' . $p->image : null,
                     'is_active'     => $p->is_active,
                     'category_name' => $p->category?->name,
@@ -54,7 +55,11 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $data = $request->validated();
-        unset($data['clear_image'], $data['clear_highlight_image']);
+        unset($data['clear_image'], $data['clear_thumbnail'], $data['clear_highlight_image']);
+
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails', 'public');
+        }
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
@@ -132,6 +137,7 @@ class ProductController extends Controller
 
         return Inertia::render('Admin/Products/Product/Form', [
             'product'          => array_merge($product->toArray(), [
+                'thumbnail_preview'  => $product->thumbnail ? '/storage/' . $product->thumbnail : null,
                 'image_preview'      => $product->image ? '/storage/' . $product->image : null,
                 'system_category_id' => $product->category?->parent?->id,
             ]),
@@ -142,7 +148,18 @@ class ProductController extends Controller
     public function update(ProductRequest $request, Product $product)
     {
         $data = $request->validated();
-        unset($data['clear_image']);
+        unset($data['clear_image'], $data['clear_thumbnail']);
+
+        // Thumbnail (foto card produk)
+        if ($request->hasFile('thumbnail')) {
+            if ($product->thumbnail) Storage::disk('public')->delete($product->thumbnail);
+            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails', 'public');
+        } elseif ($request->boolean('clear_thumbnail')) {
+            if ($product->thumbnail) Storage::disk('public')->delete($product->thumbnail);
+            $data['thumbnail'] = null;
+        } else {
+            unset($data['thumbnail']);
+        }
 
         // Main product image
         if ($request->hasFile('image')) {
@@ -269,6 +286,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($product->thumbnail) Storage::disk('public')->delete($product->thumbnail);
         if ($product->image) Storage::disk('public')->delete($product->image);
         $product->delete();
 

@@ -66,10 +66,13 @@ const form = useForm({
     detail_body_images:    (props.product?.details ?? []).map(() => null),
     solutions_title:        props.product?.solutions_title       ?? "",
     solutions_description:  props.product?.solutions_description ?? "",
-    solutions:               (props.product?.solutions ?? []).map(s => ({
-                               label:     s.label     ?? "",
-                               video_url: s.video_url ?? "",
-                               content:   s.content   ?? "",
+    solutions:               (props.product?.solutions ?? []).map(g => ({
+                               label: g.label ?? "",
+                               items: (g.items ?? []).map(item => ({
+                                   label:     item.label     ?? "",
+                                   video_url: item.video_url ?? "",
+                                   content:   item.content   ?? "",
+                               })),
                            })),
     media_items:             (props.product?.media_items ?? []).map(m => ({
                                type:        m.type        ?? "image",
@@ -80,10 +83,10 @@ const form = useForm({
                                description: m.description ?? "",
                            })),
     media_images:           (props.product?.media_items ?? []).map(() => null),
-    model_overview:          (props.product?.model_overview ?? []).map(s => ({
-                               label: s.label ?? "",
-                               value: s.value ?? "",
-                           })),
+    model_overview: {
+        columns: [...(props.product?.model_overview?.columns ?? [])],
+        rows:    (props.product?.model_overview?.rows ?? []).map(row => [...row]),
+    },
     downloads:               (props.product?.downloads ?? []).map(d => ({
                                title: d.title ?? "",
                                file:  d.file  ?? "",
@@ -91,6 +94,9 @@ const form = useForm({
                            })),
     download_files:         (props.product?.downloads ?? []).map(() => null),
     is_active:             props.product?.is_active           ?? true,
+    thumbnail:             null,
+    clear_thumbnail:       false,
+    thumbnail_url:         props.product?.thumbnail_url       ?? "",
     image:                 null,
     clear_image:           false,
     image_url:             props.product?.image_url           ?? "",
@@ -106,6 +112,36 @@ const form = useForm({
 watch(selectedSystemId, () => {
     form.product_category_id = "";
 });
+
+// thumbnail (foto card produk)
+const thumbnailMode    = ref(props.product?.thumbnail_url ? 'url' : 'upload');
+const thumbnailPreview = ref(props.product?.thumbnail_preview ?? null);
+const thumbnailInput   = ref(null);
+
+function onThumbnailChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    form.thumbnail       = file;
+    form.clear_thumbnail = false;
+    form.thumbnail_url   = "";
+    thumbnailPreview.value = URL.createObjectURL(file);
+}
+
+function clearThumbnail() {
+    form.thumbnail       = null;
+    form.clear_thumbnail = true;
+    thumbnailPreview.value = null;
+    if (thumbnailInput.value) thumbnailInput.value.value = "";
+}
+
+function switchThumbnailMode(mode) {
+    thumbnailMode.value = mode;
+    if (mode === 'url') {
+        clearThumbnail();
+    } else {
+        form.thumbnail_url = "";
+    }
+}
 
 // image_mode: 'upload' | 'url'
 const imageMode    = ref(props.product?.image_url ? 'url' : 'upload');
@@ -351,12 +387,17 @@ function removeDetail(index) {
 }
 
 // Solutions (tabs) management
-function addSolution() {
-    form.solutions.push({ label: "", video_url: "", content: "" });
+function addSolutionGroup() {
+    form.solutions.push({ label: "", items: [] });
 }
-
-function removeSolution(index) {
-    form.solutions.splice(index, 1);
+function removeSolutionGroup(gi) {
+    form.solutions.splice(gi, 1);
+}
+function addSolutionItem(gi) {
+    form.solutions[gi].items.push({ label: "", video_url: "", content: "" });
+}
+function removeSolutionItem(gi, ii) {
+    form.solutions[gi].items.splice(ii, 1);
 }
 
 // Media Center management
@@ -423,12 +464,22 @@ function removeMedia(index) {
 }
 
 // Model Overview management
-function addModelOverview() {
-    form.model_overview.push({ label: "", value: "" });
+function addModelOverviewColumn() {
+    form.model_overview.columns.push("");
+    form.model_overview.rows.forEach(row => row.push(""));
 }
 
-function removeModelOverview(index) {
-    form.model_overview.splice(index, 1);
+function removeModelOverviewColumn(i) {
+    form.model_overview.columns.splice(i, 1);
+    form.model_overview.rows.forEach(row => row.splice(i + 1, 1));
+}
+
+function addModelOverviewRow() {
+    form.model_overview.rows.push(["", ...form.model_overview.columns.map(() => "")]);
+}
+
+function removeModelOverviewRow(i) {
+    form.model_overview.rows.splice(i, 1);
 }
 
 // Downloads management
@@ -608,6 +659,67 @@ function submit() {
                     </div>
                 </div>
 
+                <!-- Foto Card Produk -->
+                <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
+                    <div>
+                        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Foto Card Produk</h2>
+                        <p class="text-xs text-slate-400 mt-1">Gambar yang tampil di grid/card halaman katalog produk. Jika kosong, menggunakan foto hero produk.</p>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold text-slate-700">Foto</p>
+                        <div class="flex items-center border border-gray-200 rounded overflow-hidden text-xs font-semibold">
+                            <button type="button" @click="switchThumbnailMode('upload')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="thumbnailMode === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                Upload
+                            </button>
+                            <button type="button" @click="switchThumbnailMode('url')"
+                                class="px-3 py-1.5 transition-colors duration-150"
+                                :class="thumbnailMode === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                URL Eksternal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload mode -->
+                    <template v-if="thumbnailMode === 'upload'">
+                        <div v-if="thumbnailPreview"
+                            class="relative w-48 h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                            <img :src="thumbnailPreview" alt="Preview" class="w-full h-full object-contain" />
+                            <button type="button" @click="clearThumbnail"
+                                class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
+                                ×
+                            </button>
+                        </div>
+                        <div>
+                            <input ref="thumbnailInput" type="file" accept="image/*" @change="onThumbnailChange"
+                                class="block text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer" />
+                            <p class="text-xs text-slate-400 mt-1">Format JPG, PNG, WebP. Maks 3 MB. Disarankan rasio 4:3 atau 1:1.</p>
+                            <p v-if="form.errors.thumbnail" class="text-xs text-red-500 mt-1">{{ form.errors.thumbnail }}</p>
+                        </div>
+                    </template>
+
+                    <!-- URL mode -->
+                    <template v-else>
+                        <div>
+                            <input v-model="form.thumbnail_url" type="url" placeholder="https://example.com/thumbnail-produk.jpg"
+                                class="w-full border border-gray-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded transition-colors" />
+                            <p class="text-xs text-slate-400 mt-1">URL lengkap menuju file gambar (JPG, PNG, WebP).</p>
+                            <p v-if="form.errors.thumbnail_url" class="text-xs text-red-500 mt-1">{{ form.errors.thumbnail_url }}</p>
+                        </div>
+                        <div v-if="form.thumbnail_url"
+                            class="relative w-48 h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                            <img :src="form.thumbnail_url" alt="Preview URL" class="w-full h-full object-contain"
+                                @error="(e) => e.target.style.display = 'none'" />
+                            <button type="button" @click="form.thumbnail_url = ''"
+                                class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
+                                ×
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
                 <!-- Media Produk -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-5">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Media Produk</h2>
@@ -658,9 +770,13 @@ function submit() {
                                 <p v-if="form.errors.image_url" class="text-xs text-red-500 mt-1">{{ form.errors.image_url }}</p>
                             </div>
                             <div v-if="form.image_url"
-                                class="w-64 h-40 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                                class="relative w-64 h-40 border border-gray-200 rounded overflow-hidden bg-gray-50">
                                 <img :src="form.image_url" alt="Preview URL" class="w-full h-full object-cover"
                                     @error="(e) => e.target.style.display = 'none'" />
+                                <button type="button" @click="form.image_url = ''"
+                                    class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
+                                    ×
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -728,9 +844,13 @@ function submit() {
                                 placeholder="https://example.com/badge-sertifikat.png"
                                 class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
                             <div v-if="form[`hero_cert_badge_${i}`]"
-                                class="w-20 h-20 border border-gray-200 rounded bg-white">
+                                class="relative w-20 h-20 border border-gray-200 rounded bg-white">
                                 <img :src="form[`hero_cert_badge_${i}`]" class="w-full h-full object-contain p-2 drop-shadow"
                                     @error="(e) => e.target.style.display = 'none'" />
+                                <button type="button" @click="clearHeroBadge(i)"
+                                    class="absolute top-0.5 right-0.5 bg-red-600 hover:bg-red-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold leading-none">
+                                    ×
+                                </button>
                             </div>
                         </template>
                         <p v-if="form.errors[`hero_cert_badge_${i}_file`]" class="text-xs text-red-500">{{ form.errors[`hero_cert_badge_${i}_file`] }}</p>
@@ -818,9 +938,13 @@ function submit() {
                                 placeholder="https://example.com/foto-produk.jpg"
                                 class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
                             <div v-if="form.highlight_image"
-                                class="w-48 h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                                class="relative w-48 h-32 border border-gray-200 rounded overflow-hidden bg-gray-50">
                                 <img :src="form.highlight_image" class="w-full h-full object-contain"
                                     @error="(e) => e.target.style.display = 'none'" />
+                                <button type="button" @click="form.highlight_image = ''"
+                                    class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold leading-none">
+                                    ×
+                                </button>
                             </div>
                             <p class="text-xs text-slate-400">Jika kosong, menggunakan foto produk utama.</p>
                         </template>
@@ -1073,7 +1197,10 @@ function submit() {
 
                 <!-- Solutions (Tabs) -->
                 <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-5">
-                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Solusi (Tabs)</h2>
+                    <div>
+                        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Solusi (Tabs)</h2>
+                        <p class="text-xs text-slate-400 mt-1">Struktur dua level: Grup (tab parent) → Item (sub-tab dengan konten). Video per item bersifat opsional.</p>
+                    </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Judul Section</label>
@@ -1093,55 +1220,89 @@ function submit() {
 
                     <div class="border-t border-gray-100"></div>
 
+                    <!-- Grup list -->
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-semibold text-slate-700">Item Tab</p>
-                        <button type="button" @click="addSolution"
+                        <p class="text-xs font-semibold text-slate-700">Grup (Tab Parent)</p>
+                        <button type="button" @click="addSolutionGroup"
                             class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Tab
+                            Tambah Grup
                         </button>
                     </div>
-                    <p class="text-xs text-slate-400">Video bersifat opsional — jika kosong, area video tidak akan ditampilkan di halaman produk.</p>
 
                     <div v-if="form.solutions.length" class="space-y-4">
-                        <div v-for="(item, i) in form.solutions" :key="i"
-                            class="border border-gray-100 rounded-lg p-3 space-y-3 bg-gray-50/50">
+                        <div v-for="(group, gi) in form.solutions" :key="gi"
+                            class="border border-gray-200 rounded-lg p-4 space-y-4 bg-gray-50/30">
 
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-slate-400">Tab {{ i + 1 }}</span>
-                                <button type="button" @click="removeSolution(i)"
-                                    class="text-red-400 hover:text-red-600 transition-colors">
+                            <!-- Group header -->
+                            <div class="flex items-center gap-3">
+                                <input v-model="group.label" type="text"
+                                    placeholder="Label grup, e.g. Safety"
+                                    class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                <button type="button" @click="removeSolutionGroup(gi)"
+                                    class="text-red-400 hover:text-red-600 transition-colors shrink-0">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
+                            <p v-if="form.errors[`solutions.${gi}.label`]" class="text-xs text-red-500 -mt-2">{{ form.errors[`solutions.${gi}.label`] }}</p>
 
-                            <div>
-                                <input v-model="item.label" type="text"
-                                    placeholder="Label tab, e.g. Rak Tinggi (High Bay)..."
-                                    class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                <p v-if="form.errors[`solutions.${i}.label`]" class="text-xs text-red-500 mt-1">{{ form.errors[`solutions.${i}.label`] }}</p>
-                            </div>
+                            <!-- Items inside group -->
+                            <div class="pl-3 border-l-2 border-orange-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-xs font-semibold text-slate-500">Item (Sub-Tab)</p>
+                                    <button type="button" @click="addSolutionItem(gi)"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        Tambah Item
+                                    </button>
+                                </div>
 
-                            <div>
-                                <input v-model="item.video_url" type="url"
-                                    placeholder="https://youtu.be/... atau link YouTube/Vimeo (opsional)"
-                                    class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                <p class="text-xs text-slate-400 mt-1">Bisa pakai link share biasa dari YouTube/Vimeo, otomatis dikonversi ke format embed.</p>
-                                <p v-if="form.errors[`solutions.${i}.video_url`]" class="text-xs text-red-500 mt-1">{{ form.errors[`solutions.${i}.video_url`] }}</p>
-                            </div>
+                                <div v-if="group.items.length" class="space-y-3">
+                                    <div v-for="(item, ii) in group.items" :key="ii"
+                                        class="border border-gray-100 rounded p-3 space-y-3 bg-white">
 
-                            <div>
-                                <RichTextEditor v-model="item.content" />
-                                <p v-if="form.errors[`solutions.${i}.content`]" class="text-xs text-red-500 mt-1">{{ form.errors[`solutions.${i}.content`] }}</p>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-400">Item {{ ii + 1 }}</span>
+                                            <button type="button" @click="removeSolutionItem(gi, ii)"
+                                                class="text-red-400 hover:text-red-600 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div>
+                                            <input v-model="item.label" type="text"
+                                                placeholder="Label item, e.g. Acoustic signal when reversing"
+                                                class="w-full border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                            <p v-if="form.errors[`solutions.${gi}.items.${ii}.label`]" class="text-xs text-red-500 mt-1">{{ form.errors[`solutions.${gi}.items.${ii}.label`] }}</p>
+                                        </div>
+
+                                        <div>
+                                            <input v-model="item.video_url" type="url"
+                                                placeholder="https://youtu.be/... (opsional)"
+                                                class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                            <p class="text-xs text-slate-400 mt-1">Link YouTube/Vimeo, otomatis dikonversi ke embed.</p>
+                                        </div>
+
+                                        <div>
+                                            <RichTextEditor v-model="item.content" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p v-else class="text-xs text-slate-300 italic">Belum ada item di grup ini.</p>
                             </div>
                         </div>
                     </div>
 
-                    <p v-else class="text-xs text-slate-300 italic">Belum ada item tab.</p>
+                    <p v-else class="text-xs text-slate-300 italic">Belum ada grup.</p>
                 </div>
 
                 <!-- Media Center -->
@@ -1298,51 +1459,92 @@ function submit() {
                 </div>
 
                 <!-- Model Overview -->
-                <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-5">
+                    <div>
                         <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Model Overview</h2>
-                        <button type="button" @click="addModelOverview"
-                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Tambah Item
-                        </button>
+                        <p class="text-xs text-slate-400 mt-1">Tabel perbandingan varian model. Kolom pertama ("Model") selalu ada. Tambah kolom spesifikasi sesuai kebutuhan, lalu isi baris per varian.</p>
                     </div>
 
-                    <p class="text-xs text-slate-400">Ditampilkan sebagai grid 4 kolom di halaman produk. Item pertama ("Model") otomatis terisi dari nama produk dan tidak bisa dihapus. Contoh: Label = "Kapasitas Angkat", Nilai = "1.500 kg"</p>
-
+                    <!-- Column headers -->
                     <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold text-slate-700">Kolom Spesifikasi</p>
+                            <button type="button" @click="addModelOverviewColumn"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah Kolom
+                            </button>
+                        </div>
+
+                        <!-- Fixed "Model" column -->
                         <div class="flex items-center gap-2">
                             <input type="text" value="Model" disabled
-                                class="w-2/5 border border-gray-200 rounded px-3 py-2 text-sm text-slate-400 bg-gray-50 cursor-not-allowed" />
-                            <input type="text" :value="form.name || '(nama produk)'" disabled
                                 class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm text-slate-400 bg-gray-50 cursor-not-allowed" />
                             <span class="w-4 h-4 shrink-0"></span>
                         </div>
-                    </div>
 
-                    <div v-if="form.model_overview.length" class="space-y-2">
-                        <div v-for="(item, i) in form.model_overview" :key="i">
-                            <div class="flex items-center gap-2">
-                                <input v-model="item.label" type="text" placeholder="Label"
-                                    class="w-2/5 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                <input v-model="item.value" type="text" placeholder="Nilai"
-                                    class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                <button type="button" @click="removeModelOverview(i)"
-                                    class="text-red-400 hover:text-red-600 transition-colors shrink-0">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <p v-if="form.errors[`model_overview.${i}.label`] || form.errors[`model_overview.${i}.value`]"
-                                class="text-xs text-red-500 mt-1">{{ form.errors[`model_overview.${i}.label`] || form.errors[`model_overview.${i}.value`] }}</p>
+                        <!-- Dynamic columns -->
+                        <div v-for="(col, ci) in form.model_overview.columns" :key="ci" class="flex items-center gap-2">
+                            <input v-model="form.model_overview.columns[ci]" type="text"
+                                placeholder="e.g. Kapasitas Angkat (kg)"
+                                class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                            <button type="button" @click="removeModelOverviewColumn(ci)"
+                                class="text-red-400 hover:text-red-600 transition-colors shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
+
+                        <p v-if="!form.model_overview.columns.length" class="text-xs text-slate-300 italic">Belum ada kolom spesifikasi.</p>
                     </div>
 
-                    <p v-else class="text-xs text-slate-300 italic">Belum ada item Model Overview.</p>
+                    <div class="border-t border-gray-100"></div>
+
+                    <!-- Rows -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold text-slate-700">Baris Model</p>
+                            <button type="button" @click="addModelOverviewRow"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah Baris
+                            </button>
+                        </div>
+
+                        <div v-if="form.model_overview.rows.length" class="space-y-2">
+                            <div v-for="(row, ri) in form.model_overview.rows" :key="ri"
+                                class="border border-gray-100 rounded p-3 bg-gray-50/50 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-400">Baris {{ ri + 1 }}</span>
+                                    <button type="button" @click="removeModelOverviewRow(ri)"
+                                        class="text-red-400 hover:text-red-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <!-- Model name (index 0) -->
+                                <div class="flex items-center gap-2">
+                                    <span class="w-32 shrink-0 text-xs text-slate-400">Model</span>
+                                    <input v-model="row[0]" type="text" placeholder="e.g. FM-X 10 / Li-Ion"
+                                        class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                </div>
+                                <!-- Dynamic column values (index 1+) -->
+                                <div v-for="(col, ci) in form.model_overview.columns" :key="ci" class="flex items-center gap-2">
+                                    <span class="w-32 shrink-0 text-xs text-slate-400 truncate">{{ col || `Kolom ${ci + 1}` }}</span>
+                                    <input v-model="row[ci + 1]" type="text" :placeholder="`Nilai ${col || `kolom ${ci + 1}`}`"
+                                        class="flex-1 border border-gray-200 rounded px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <p v-else class="text-xs text-slate-300 italic">Belum ada baris model.</p>
+                    </div>
                 </div>
 
                 <!-- Downloads -->

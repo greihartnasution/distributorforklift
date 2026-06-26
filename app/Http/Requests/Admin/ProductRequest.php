@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductRequest extends FormRequest
@@ -28,6 +27,9 @@ class ProductRequest extends FormRequest
             'specs'               => ['nullable', 'array'],
             'specs.*.label'       => ['required_with:specs', 'string', 'max:100'],
             'specs.*.value'       => ['required_with:specs', 'string', 'max:255'],
+            'thumbnail'                  => ['nullable', 'image:allow_svg', 'max:3072'],
+            'clear_thumbnail'            => ['boolean'],
+            'thumbnail_url'              => ['nullable', 'url', 'max:500'],
             'image'                      => ['nullable', 'image:allow_svg', 'max:3072'],
             'clear_image'                => ['boolean'],
             'image_url'                  => ['nullable', 'url', 'max:500'],
@@ -52,10 +54,12 @@ class ProductRequest extends FormRequest
             'detail_body_images.*'       => ['nullable', 'image:allow_svg', 'max:3072'],
             'solutions_title'            => ['nullable', 'string', 'max:255'],
             'solutions_description'      => ['nullable', 'string'],
-            'solutions'                  => ['nullable', 'array'],
-            'solutions.*.label'          => ['required_with:solutions', 'string', 'max:255'],
-            'solutions.*.video_url'      => ['nullable', 'url', 'max:500'],
-            'solutions.*.content'        => ['nullable', 'string'],
+            'solutions'                          => ['nullable', 'array'],
+            'solutions.*.label'                  => ['required_with:solutions', 'string', 'max:255'],
+            'solutions.*.items'                  => ['nullable', 'array'],
+            'solutions.*.items.*.label'          => ['required_with:solutions.*.items', 'string', 'max:255'],
+            'solutions.*.items.*.video_url'      => ['nullable', 'url', 'max:500'],
+            'solutions.*.items.*.content'        => ['nullable', 'string'],
             'media_items'                => ['nullable', 'array'],
             'media_items.*.type'         => ['required_with:media_items', 'in:image,video'],
             'media_items.*.title'        => ['nullable', 'string', 'max:255'],
@@ -65,9 +69,12 @@ class ProductRequest extends FormRequest
             'media_items.*.description'  => ['nullable', 'string'],
             'media_images'               => ['nullable', 'array'],
             'media_images.*'             => ['nullable', 'image:allow_svg', 'max:3072'],
-            'model_overview'             => ['nullable', 'array'],
-            'model_overview.*.label'     => ['required_with:model_overview', 'string', 'max:100'],
-            'model_overview.*.value'     => ['required_with:model_overview', 'string', 'max:255'],
+            'model_overview'                => ['nullable', 'array'],
+            'model_overview.columns'        => ['nullable', 'array'],
+            'model_overview.columns.*'      => ['nullable', 'string', 'max:255'],
+            'model_overview.rows'           => ['nullable', 'array'],
+            'model_overview.rows.*'         => ['nullable', 'array'],
+            'model_overview.rows.*.*'       => ['nullable', 'string', 'max:255'],
             'downloads'                  => ['nullable', 'array'],
             'downloads.*.title'          => ['required_with:downloads', 'string', 'max:255'],
             'downloads.*.file'           => ['nullable', 'string', 'max:500'],

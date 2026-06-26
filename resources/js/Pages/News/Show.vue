@@ -211,4 +211,9 @@ defineProps({
     font-style: italic;
     margin: 1.5rem 0;
 }
+.article-content :deep(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
 </style>

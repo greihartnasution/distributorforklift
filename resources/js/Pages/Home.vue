@@ -908,6 +908,11 @@ const brands = ["TOYOTA", "KOMATSU", "LINDE", "HYSTER", "CROWN", "MITSUBISHI"];
 .about-long-desc :deep(em) {
     font-style: italic;
 }
+.about-long-desc :deep(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
 
 /* ── Testimoni transitions ───────────────────────────────── */
 .testi-fade-enter-active,

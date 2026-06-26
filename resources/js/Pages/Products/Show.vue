@@ -301,27 +301,52 @@
                     </div>
 
                     <!-- Right: CTA -->
-                    <a
-                        :href="whatsappCtaHref ?? '#inquiry'"
-                        :target="whatsappCtaHref ? '_blank' : undefined"
-                        :rel="whatsappCtaHref ? 'noopener' : undefined"
-                        class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold px-5 py-2 transition-colors duration-200"
-                    >
-                        Dapatkan Penawaran
-                        <svg
-                            class="w-3.5 h-3.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                    <div class="flex items-center gap-2">
+                        <!-- Sewa -->
+                        <a
+                            :href="whatsappRentHref ?? '#inquiry'"
+                            :target="whatsappRentHref ? '_blank' : undefined"
+                            :rel="whatsappRentHref ? 'noopener' : undefined"
+                            class="inline-flex items-center gap-2 border border-orange-600 text-orange-600 hover:bg-orange-50 font-bold px-5 py-2 transition-colors duration-200"
                         >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2.5"
-                                d="M9 5l7 7-7 7"
-                            />
-                        </svg>
-                    </a>
+                            <svg
+                                class="w-3.5 h-3.5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                                />
+                            </svg>
+                            Sewa
+                        </a>
+                        <!-- Minta Penawaran -->
+                        <a
+                            :href="whatsappBuyHref ?? '#inquiry'"
+                            :target="whatsappBuyHref ? '_blank' : undefined"
+                            :rel="whatsappBuyHref ? 'noopener' : undefined"
+                            class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold px-5 py-2 transition-colors duration-200"
+                        >
+                            Minta Penawaran
+                            <svg
+                                class="w-3.5 h-3.5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2.5"
+                                    d="M9 5l7 7-7 7"
+                                />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -558,11 +583,34 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16">
-                    <!-- Col 5: Tab list -->
+                <!-- Parent tabs -->
+                <div
+                    class="flex items-center border-b border-gray-200 mb-10 overflow-x-auto overflow-y-hidden"
+                >
+                    <button
+                        v-for="(group, gi) in solutions.items"
+                        :key="gi"
+                        type="button"
+                        @click="activeParentIndex = gi"
+                        class="px-5 py-3 text-lg md:text-xl font-bold border-b-4 -mb-px whitespace-nowrap transition-colors duration-150"
+                        :class="
+                            activeParentIndex === gi
+                                ? 'border-orange-600 text-orange-600'
+                                : 'border-transparent text-slate-500 hover:text-slate-800'
+                        "
+                    >
+                        {{ group.label }}
+                    </button>
+                </div>
+
+                <div
+                    v-if="activeParent"
+                    class="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16"
+                >
+                    <!-- Col 5: Sub-item list -->
                     <div class="md:col-span-5">
                         <div
-                            v-for="(item, i) in solutions.items"
+                            v-for="(item, i) in activeParent.items"
                             :key="i"
                             class="border-b border-gray-200 last:border-0"
                         >
@@ -944,7 +992,7 @@
 
         <!-- Model Overview -->
         <section
-            v-if="product.model_overview?.length"
+            v-if="modelOverview"
             id="model-overview"
             class="bg-white py-16 md:py-20 border-b border-gray-100"
         >
@@ -955,34 +1003,45 @@
                     Model Overview
                 </h2>
 
-                <div class="space-y-8">
-                    <div
-                        v-for="(row, ri) in modelOverviewRows"
-                        :key="ri"
-                        class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6"
-                    >
-                        <div
-                            v-for="(item, ci) in row"
-                            :key="ci"
-                            :class="{
-                                'md:text-right': !(ri === 0 && ci === 0),
-                            }"
-                        >
-                            <p class="font-bold text-[#969492] mb-3">
-                                {{ item.label }}
-                            </p>
-                            <p
-                                class="text-lg"
-                                :class="
-                                    ri === 0 && ci === 0
-                                        ? 'text-orange-600'
-                                        : 'text-slate-800'
-                                "
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th
+                                    class="text-left py-3 pr-6 font-semibold text-slate-500 whitespace-nowrap"
+                                >
+                                    Model
+                                </th>
+                                <th
+                                    v-for="(col, ci) in modelOverview.columns"
+                                    :key="ci"
+                                    class="text-right py-3 px-4 font-semibold text-slate-500 whitespace-nowrap"
+                                >
+                                    {{ col }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="(row, ri) in modelOverview.rows"
+                                :key="ri"
+                                class="border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors"
                             >
-                                {{ item.value }}
-                            </p>
-                        </div>
-                    </div>
+                                <td
+                                    class="py-3 pr-6 font-medium text-slate-800 whitespace-nowrap"
+                                >
+                                    {{ row[0] }}
+                                </td>
+                                <td
+                                    v-for="(val, vi) in row.slice(1)"
+                                    :key="vi"
+                                    class="py-3 px-4 text-right text-slate-600 whitespace-nowrap"
+                                >
+                                    {{ val }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -1061,7 +1120,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { Head, usePage } from "@inertiajs/vue3";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import InquirySection from "@/Components/Public/InquirySection.vue";
@@ -1077,17 +1136,21 @@ const contentMenuOpen = ref(false);
 
 const siteSettings = computed(() => usePage().props.site_settings ?? {});
 
-const whatsappCtaHref = computed(() => {
+function buildWhatsappHref(message) {
     const wa = siteSettings.value.whatsapp;
     if (!wa) return null;
-
-    const message =
-        props.systemCategory.slug === "sewa-forklift"
-            ? `Halo, saya tertarik untuk menyewa *${props.product.name}*. Mohon info lebih lanjut.`
-            : `Halo, saya tertarik untuk membeli *${props.product.name}*. Mohon info lebih lanjut.`;
-
     return `https://wa.me/${wa}?text=${encodeURIComponent(message)}`;
-});
+}
+
+const whatsappRentHref = computed(() =>
+    buildWhatsappHref(`Saya berencana sewa ${props.product.name} STILL`),
+);
+
+const whatsappBuyHref = computed(() =>
+    buildWhatsappHref(
+        `Saya tertarik untuk membeli ${props.product.name} STILL`,
+    ),
+);
 
 const highlightIcons = [
     "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z",
@@ -1133,7 +1196,12 @@ const productDetails = computed(() =>
     })),
 );
 
+const activeParentIndex = ref(0);
 const activeSolutionIndex = ref(0);
+
+watch(activeParentIndex, () => {
+    activeSolutionIndex.value = 0;
+});
 
 const solutions = computed(() => ({
     title: props.product.solutions_title,
@@ -1141,8 +1209,12 @@ const solutions = computed(() => ({
     items: props.product.solutions ?? [],
 }));
 
+const activeParent = computed(
+    () => solutions.value.items[activeParentIndex.value] ?? null,
+);
+
 const activeSolution = computed(
-    () => solutions.value.items[activeSolutionIndex.value] ?? null,
+    () => activeParent.value?.items?.[activeSolutionIndex.value] ?? null,
 );
 
 function toEmbedVideoUrl(url) {
@@ -1298,17 +1370,10 @@ function downloadVideo(video) {
     window.open(video.video_url, "_blank", "noopener");
 }
 
-const modelOverviewRows = computed(() => {
-    const items = [
-        { label: "Model", value: props.product.name },
-        ...(props.product.model_overview ?? []),
-    ];
-
-    const rows = [];
-    for (let i = 0; i < items.length; i += 4) {
-        rows.push(items.slice(i, i + 4));
-    }
-    return rows;
+const modelOverview = computed(() => {
+    const mo = props.product.model_overview;
+    if (!mo?.columns?.length || !mo?.rows?.length) return null;
+    return mo;
 });
 
 function getFileExtension(url) {
@@ -1341,7 +1406,7 @@ const pageSections = computed(() => {
         sections.push({ label: "Solusi", href: "#solutions" });
     if (mediaImages.value.length || mediaVideos.value.length)
         sections.push({ label: "Media Center", href: "#media" });
-    if (props.product.model_overview?.length)
+    if (modelOverview.value)
         sections.push({ label: "Model Overview", href: "#model-overview" });
     if (props.product.specs?.length)
         sections.push({ label: "Spesifikasi", href: "#specs" });
@@ -1434,5 +1499,11 @@ const pageSections = computed(() => {
 }
 .detail-content :deep(span) {
     color: inherit;
+}
+.product-content :deep(img),
+.detail-content :deep(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 </style>
