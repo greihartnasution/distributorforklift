@@ -79,6 +79,21 @@ class ProductController extends Controller
         }
         unset($data['highlight_item_images']);
 
+        if ($request->hasFile('solution_item_images') && !empty($data['solutions'])) {
+            $files = $request->file('solution_item_images');
+            $flat  = 0;
+            foreach ($data['solutions'] as $gi => &$group) {
+                foreach ($group['items'] as $ii => &$item) {
+                    if (!empty($files[$flat])) {
+                        $item['image_url'] = '/storage/' . $files[$flat]->store('solution-items', 'public');
+                    }
+                    $flat++;
+                }
+            }
+            unset($group, $item);
+        }
+        unset($data['solution_item_images']);
+
         if ($request->hasFile('detail_icon_images') && !empty($data['details'])) {
             foreach ($request->file('detail_icon_images') as $index => $file) {
                 if ($file && isset($data['details'][$index])) {
@@ -195,6 +210,22 @@ class ProductController extends Controller
             }
         }
         unset($data['highlight_item_images']);
+
+        // Per-item solution images
+        if ($request->hasFile('solution_item_images') && !empty($data['solutions'])) {
+            $files = $request->file('solution_item_images');
+            $flat  = 0;
+            foreach ($data['solutions'] as $gi => &$group) {
+                foreach ($group['items'] as $ii => &$item) {
+                    if (!empty($files[$flat])) {
+                        $item['image_url'] = '/storage/' . $files[$flat]->store('solution-items', 'public');
+                    }
+                    $flat++;
+                }
+            }
+            unset($group, $item);
+        }
+        unset($data['solution_item_images']);
 
         // Per-item detail images
         if ($request->hasFile('detail_icon_images') && !empty($data['details'])) {

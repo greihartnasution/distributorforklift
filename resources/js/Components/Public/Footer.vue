@@ -44,18 +44,27 @@ const hasSocial = computed(
 );
 
 const productLinks = [
-    { label: "Forklift Baru", href: "#" },
-    { label: "Forklift Sewa", href: "#" },
-    { label: "Forklift Bekas", href: "#" },
-    { label: "Reach Truck", href: "#" },
-    { label: "Hand Pallet Jack", href: "#" },
+    { label: "Forklift Elektrik",            href: "/forklift/forklift-elektrik" },
+    { label: "Forklift Diesel",              href: "/forklift/forklift-diesel" },
+    { label: "Forklift LP Gas",              href: "/forklift/forklift-lp-gas" },
+    { label: "Reach Truck",                  href: "/forklift/reach-truck" },
+    { label: "Platform Truck dan Traktor",   href: "/forklift/platform-truck-dan-traktor" },
+    { label: "High Lift Stacker",            href: "/forklift/high-lift-stacker" },
+    { label: "Double Stacker",               href: "/forklift/double-stacker" },
+    { label: "Low Lift Pallet Mover",        href: "/forklift/low-lift-pallet-mover" },
+    { label: "Order Picker",                 href: "/forklift/order-picker" },
+    { label: "Very Narrow Aisle",            href: "/forklift/very-narrow-aisle" },
+    { label: "Tugger Train",                 href: "/forklift/tugger-train" },
+    { label: "Hand Pallet",                  href: "/forklift/hand-pallet" },
+    { label: "Automated Industrial Truck",   href: "/forklift/automated-industrial-truck" },
 ];
 
 const serviceLinks = [
-    { label: "Servis & Perawatan", href: "#" },
-    { label: "Suku Cadang", href: "#" },
-    { label: "Konsultasi Teknis", href: "#" },
-    { label: "Garansi Purna Jual", href: "#" },
+    { label: "Fleet Management",     href: "/fleet-management" },
+    { label: "Servis dan Perawatan", href: "/servis-dan-perawatan" },
+    { label: "Suku Cadang",          href: "/suku-cadang" },
+    { label: "Konsultansi Teknis",   href: "/konsultansi-teknis" },
+    { label: "Garansi Purna Jual",   href: "/garansi-purna-jual" },
 ];
 
 const companyLinks = [

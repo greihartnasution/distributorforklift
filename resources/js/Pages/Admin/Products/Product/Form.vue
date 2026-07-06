@@ -69,11 +69,16 @@ const form = useForm({
     solutions:               (props.product?.solutions ?? []).map(g => ({
                                label: g.label ?? "",
                                items: (g.items ?? []).map(item => ({
-                                   label:     item.label     ?? "",
-                                   video_url: item.video_url ?? "",
-                                   content:   item.content   ?? "",
+                                   label:      item.label      ?? "",
+                                   media_type: item.media_type ?? (item.image_url ? 'image' : 'video'),
+                                   video_url:  item.video_url  ?? "",
+                                   image_url:  item.image_url  ?? "",
+                                   content:    item.content    ?? "",
                                })),
                            })),
+    solution_item_images:    (props.product?.solutions ?? []).flatMap(g =>
+                               (g.items ?? []).map(() => null)
+                           ),
     media_items:             (props.product?.media_items ?? []).map(m => ({
                                type:        m.type        ?? "image",
                                title:       m.title       ?? "",
@@ -386,18 +391,64 @@ function removeDetail(index) {
     detailImagePreviews.value.splice(index, 1);
 }
 
+// Solution item image state (keyed by `${gi}_${ii}`)
+const solutionItemImgModes    = ref({});
+const solutionItemImgPreviews = ref({});
+// Init modes from existing product data (URL → 'url', else 'upload')
+(props.product?.solutions ?? []).forEach((g, gi) => {
+    (g.items ?? []).forEach((item, ii) => {
+        solutionItemImgModes.value[`${gi}_${ii}`] = item.image_url ? 'url' : 'upload';
+    });
+});
+
+function solutionItemFlatIndex(gi, ii) {
+    let idx = 0;
+    for (let g = 0; g < gi; g++) idx += form.solutions[g]?.items?.length ?? 0;
+    return idx + ii;
+}
+function switchSolItemImgMode(gi, ii, mode) {
+    solutionItemImgModes.value[`${gi}_${ii}`] = mode;
+    if (mode === 'url') {
+        form.solution_item_images[solutionItemFlatIndex(gi, ii)] = null;
+        solutionItemImgPreviews.value[`${gi}_${ii}`] = null;
+    } else {
+        form.solutions[gi].items[ii].image_url = '';
+    }
+}
+function onSolItemImgChange(gi, ii, e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    form.solution_item_images[solutionItemFlatIndex(gi, ii)] = file;
+    form.solutions[gi].items[ii].image_url                  = '';
+    solutionItemImgPreviews.value[`${gi}_${ii}`] = URL.createObjectURL(file);
+}
+function clearSolItemImage(gi, ii) {
+    form.solution_item_images[solutionItemFlatIndex(gi, ii)] = null;
+    form.solutions[gi].items[ii].image_url                  = '';
+    solutionItemImgPreviews.value[`${gi}_${ii}`]            = null;
+}
+
 // Solutions (tabs) management
 function addSolutionGroup() {
     form.solutions.push({ label: "", items: [] });
 }
 function removeSolutionGroup(gi) {
+    const startFlat = solutionItemFlatIndex(gi, 0);
+    const itemCount = form.solutions[gi].items.length;
     form.solutions.splice(gi, 1);
+    if (itemCount > 0) form.solution_item_images.splice(startFlat, itemCount);
 }
 function addSolutionItem(gi) {
-    form.solutions[gi].items.push({ label: "", video_url: "", content: "" });
+    const insertAt = solutionItemFlatIndex(gi, form.solutions[gi].items.length);
+    form.solutions[gi].items.push({ label: "", media_type: "video", video_url: "", image_url: "", content: "" });
+    form.solution_item_images.splice(insertAt, 0, null);
 }
 function removeSolutionItem(gi, ii) {
+    const flatIdx = solutionItemFlatIndex(gi, ii);
     form.solutions[gi].items.splice(ii, 1);
+    form.solution_item_images.splice(flatIdx, 1);
+    delete solutionItemImgModes.value[`${gi}_${ii}`];
+    delete solutionItemImgPreviews.value[`${gi}_${ii}`];
 }
 
 // Media Center management
@@ -1284,11 +1335,77 @@ function submit() {
                                             <p v-if="form.errors[`solutions.${gi}.items.${ii}.label`]" class="text-xs text-red-500 mt-1">{{ form.errors[`solutions.${gi}.items.${ii}.label`] }}</p>
                                         </div>
 
-                                        <div>
-                                            <input v-model="item.video_url" type="url"
-                                                placeholder="https://youtu.be/... (opsional)"
-                                                class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
-                                            <p class="text-xs text-slate-400 mt-1">Link YouTube/Vimeo, otomatis dikonversi ke embed.</p>
+                                        <!-- Media type toggle + input -->
+                                        <div class="space-y-2">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-xs text-slate-400 mr-1">Media:</span>
+                                                <button type="button" @click="item.media_type = 'video'"
+                                                    class="px-2 py-0.5 rounded text-xs font-semibold transition-colors"
+                                                    :class="item.media_type !== 'image' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                                    Video
+                                                </button>
+                                                <button type="button" @click="item.media_type = 'image'"
+                                                    class="px-2 py-0.5 rounded text-xs font-semibold transition-colors"
+                                                    :class="item.media_type === 'image' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                                    Gambar
+                                                </button>
+                                            </div>
+
+                                            <!-- Video -->
+                                            <template v-if="item.media_type !== 'image'">
+                                                <input v-model="item.video_url" type="url"
+                                                    placeholder="https://youtu.be/... (opsional)"
+                                                    class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                                <p class="text-xs text-slate-400">Link YouTube/Vimeo, otomatis dikonversi ke embed.</p>
+                                            </template>
+
+                                            <!-- Image -->
+                                            <template v-else>
+                                                <div class="flex items-center gap-1">
+                                                    <button type="button" @click="switchSolItemImgMode(gi, ii, 'upload')"
+                                                        class="px-2 py-0.5 rounded text-xs font-semibold transition-colors"
+                                                        :class="(solutionItemImgModes[`${gi}_${ii}`] ?? 'upload') === 'upload' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                                        Upload
+                                                    </button>
+                                                    <button type="button" @click="switchSolItemImgMode(gi, ii, 'url')"
+                                                        class="px-2 py-0.5 rounded text-xs font-semibold transition-colors"
+                                                        :class="(solutionItemImgModes[`${gi}_${ii}`] ?? 'upload') === 'url' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'">
+                                                        URL
+                                                    </button>
+                                                </div>
+
+                                                <!-- Upload -->
+                                                <template v-if="(solutionItemImgModes[`${gi}_${ii}`] ?? 'upload') === 'upload'">
+                                                    <div v-if="solutionItemImgPreviews[`${gi}_${ii}`]" class="relative inline-block">
+                                                        <img :src="solutionItemImgPreviews[`${gi}_${ii}`]"
+                                                            class="h-20 w-auto rounded object-cover border border-gray-100" />
+                                                        <button type="button" @click="clearSolItemImage(gi, ii)"
+                                                            class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600">
+                                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <input type="file" accept="image/*" @change="onSolItemImgChange(gi, ii, $event)"
+                                                        class="w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+                                                </template>
+
+                                                <!-- URL -->
+                                                <template v-else>
+                                                    <div v-if="item.image_url" class="relative inline-block">
+                                                        <img :src="item.image_url"
+                                                            class="h-20 w-auto rounded object-cover border border-gray-100" />
+                                                        <button type="button" @click="item.image_url = ''"
+                                                            class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600">
+                                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <input v-model="item.image_url" type="url" placeholder="https://..."
+                                                        class="w-full border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                                                </template>
+                                            </template>
                                         </div>
 
                                         <div>

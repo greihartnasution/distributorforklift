@@ -100,19 +100,29 @@ class ProductSeeder extends Seeder
                 'solutions_description' => 'STILL offers a wide range of different solutions and truck-based extension levels to help you automate your processes. They can be adapted to the complexity of your requirements, meaning that they are guaranteed to pay off every time.',
                 'solutions' => [
                     [
-                        'label'     => 'Goods-to-person',
-                        'video_url' => 'https://youtu.be/eszLj1-q6NQ?si=eBgNVR-ucEYU7h5h',
-                        'content'   => '<h3 class="content-tabs-vertical__item-content-headline" style="margin: 0px 0px 1em; line-height: 1.4;">Goods-to-person</h3><p style="margin: 0px 0px 1em;"></p><p style="margin: 0px 0px 1em;">Solution consisting of two different AMRs, racking, picking station and software specifically designed for goods-to-person picking, e.g. in distribution centres, fulfilment warehouses or e-commerce hubs. The solution is characterised by high flexibility, optimal use of space and intelligent control. Bin Pickers store and retrieve bins from the shelves, while Bin Movers transport the bins to the picking stations.</p><p style="margin: 0px 0px 1em;">One Bin Picker and three Bin Movers form a module with the racking and a picking station and are optimally coordinated with each other. Each module has a footprint of 43m² and supplies the picking station with up to 50 bins per hour. For higher performance requirements, modules can be combined and expanded as required.</p><p style="margin: 0px 0px 1em;">Overall, the solution helps to reduce walking distances for staff and organise picking quickly and efficiently. Orders can be completed up to four times faster than with manual picking.</p>',
+                        'label' => 'Warehouse & Distribution',
+                        'items' => [
+                            [
+                                'label'     => 'Goods-to-person',
+                                'video_url' => 'https://youtu.be/eszLj1-q6NQ?si=eBgNVR-ucEYU7h5h',
+                                'content'   => '<h3 class="content-tabs-vertical__item-content-headline" style="margin: 0px 0px 1em; line-height: 1.4;">Goods-to-person</h3><p style="margin: 0px 0px 1em;"></p><p style="margin: 0px 0px 1em;">Solution consisting of two different AMRs, racking, picking station and software specifically designed for goods-to-person picking, e.g. in distribution centres, fulfilment warehouses or e-commerce hubs. The solution is characterised by high flexibility, optimal use of space and intelligent control. Bin Pickers store and retrieve bins from the shelves, while Bin Movers transport the bins to the picking stations.</p><p style="margin: 0px 0px 1em;">One Bin Picker and three Bin Movers form a module with the racking and a picking station and are optimally coordinated with each other. Each module has a footprint of 43m² and supplies the picking station with up to 50 bins per hour. For higher performance requirements, modules can be combined and expanded as required.</p><p style="margin: 0px 0px 1em;">Overall, the solution helps to reduce walking distances for staff and organise picking quickly and efficiently. Orders can be completed up to four times faster than with manual picking.</p>',
+                            ],
+                            [
+                                'label'     => 'Inbound & outbound',
+                                'video_url' => null,
+                                'content'   => '<h3 class="content-tabs-vertical__item-content-headline" style="margin: 0px 0px 1em; line-height: 1.4;">Inbound &amp; outbound</h3><p style="margin: 0px 0px 1em;"></p><p style="margin: 0px 0px 1em;">Take your intralogistics to the next level: Store incoming or outgoing pallets within a warehouse, move goods to production or to a material handling system – horizontally and vertically.</p><p style="margin: 0px 0px 1em;"><b>Our solution:<br></b>The automated all-rounder <a href="https://www.still.co.uk/intralogistics-systems/automation-intralogistics/automated-guided-vehicles-agv.html" title="STILL EXV iGo high lift pallet truck" target="_top" style="">STILL EXV iGo high lift pallet truck</a> ensures highly efficient logistics processes – as a stand-alone solution or in mixed operation with manual trucks. The truck picks up pallets directly from the floor without any additional hardware.</p><p style="margin: 0px 0px 1em;"><b>Customer reference:<br></b>Fully automated EXV high lift pallet trucks in action at <a href="https://www.still.co.uk/solution-competence/references/use-cases/detail/more-power-for-danfoss-ai-assisted-automatic-warehouse.html" title="action at Danfoss Power Electronics A/S" target="_top" style="">Danfoss Power Electronics A/S</a></p>',
+                            ],
+                        ],
                     ],
                     [
-                        'label'     => 'Production supply',
-                        'video_url' => null,
-                        'content'   => '<h3 class="content-tabs-vertical__item-content-headline" style="margin: 0px 0px 1em; line-height: 1.4;">Production supply and disposal / empty pallet transport</h3><p style="margin: 0px 0px 1em;"></p><p style="margin: 0px 0px 1em;">Lean production begins with the supply of raw materials for processing. Smooth supply ensures that production does not come to a standstill. These processes are usually also a good starting point for automation.</p><p style="margin: 0px 0px 1em;"><b>Our solution:</b></p><p style="margin: 0px 0px 1em;">Our autonomous mobile robots (AMR) are the smart solution for optimised horizontal material flow. Also for moving pallets when working with a transfer station.The automated all-rounder STILL EXV iGo high lift pallet truck ensures highly efficient logistics processes – as a stand-alone solution or in mixed operation with manual trucks. The truck picks up pallets directly from the floor without any additional hardware.</p><p style="margin: 0px 0px 1em;"><b>Customer reference:</b></p><p style="margin: 0px 0px 1em;">Automated solution in use at the <a href="https://https//www.still.co.uk/solution-competence/references/use-cases/detail/hase-safety-gloves-gmbh-still-takes-warehouse-automation-to-a-new-level.html" title="Hase Safety Group" target="_top" style="">Hase Safety Group</a></p>',
-                    ],
-                    [
-                        'label'     => 'Inbound & outbound',
-                        'video_url' => null,
-                        'content'   => '<h3 class="content-tabs-vertical__item-content-headline" style="margin: 0px 0px 1em; line-height: 1.4;">Inbound &amp; outbound</h3><p style="margin: 0px 0px 1em;"></p><p style="margin: 0px 0px 1em;">Take your intralogistics to the next level: Store incoming or outgoing pallets within a warehouse, move goods to production or to a material handling system – horizontally and vertically.</p><p style="margin: 0px 0px 1em;"><b>Our solution:<br></b>The automated all-rounder <a href="https://www.still.co.uk/intralogistics-systems/automation-intralogistics/automated-guided-vehicles-agv.html" title="STILL EXV iGo high lift pallet truck" target="_top" style="">STILL EXV iGo high lift pallet truck</a> ensures highly efficient logistics processes – as a stand-alone solution or in mixed operation with manual trucks. The truck picks up pallets directly from the floor without any additional hardware.</p><p style="margin: 0px 0px 1em;"><b>Customer reference:<br></b>Fully automated EXV high lift pallet trucks in action at <a href="https://www.still.co.uk/solution-competence/references/use-cases/detail/more-power-for-danfoss-ai-assisted-automatic-warehouse.html" title="action at Danfoss Power Electronics A/S" target="_top" style="">Danfoss Power Electronics A/S</a></p>',
+                        'label' => 'Production & Manufacturing',
+                        'items' => [
+                            [
+                                'label'     => 'Production supply',
+                                'video_url' => null,
+                                'content'   => '<h3 class="content-tabs-vertical__item-content-headline" style="margin: 0px 0px 1em; line-height: 1.4;">Production supply and disposal / empty pallet transport</h3><p style="margin: 0px 0px 1em;"></p><p style="margin: 0px 0px 1em;">Lean production begins with the supply of raw materials for processing. Smooth supply ensures that production does not come to a standstill. These processes are usually also a good starting point for automation.</p><p style="margin: 0px 0px 1em;"><b>Our solution:</b></p><p style="margin: 0px 0px 1em;">Our autonomous mobile robots (AMR) are the smart solution for optimised horizontal material flow. Also for moving pallets when working with a transfer station. The automated all-rounder STILL EXV iGo high lift pallet truck ensures highly efficient logistics processes – as a stand-alone solution or in mixed operation with manual trucks. The truck picks up pallets directly from the floor without any additional hardware.</p><p style="margin: 0px 0px 1em;"><b>Customer reference:</b></p><p style="margin: 0px 0px 1em;">Automated solution in use at the <a href="https://www.still.co.uk/solution-competence/references/use-cases/detail/hase-safety-gloves-gmbh-still-takes-warehouse-automation-to-a-new-level.html" title="Hase Safety Group" target="_top" style="">Hase Safety Group</a></p>',
+                            ],
+                        ],
                     ],
                 ],
                 'hero_cert_badge_1' => 'https://www.still.co.uk/typo3conf/ext/mmpackage/Resources/Public/Images/li-ion-badge-shadow.svg',
@@ -184,9 +194,13 @@ class ProductSeeder extends Seeder
                     ],
                 ],
                 'model_overview' => [
-                    ['label' => 'Maximum capacity (kg)',    'value' => '2330'],
-                    ['label' => 'Maximum lift height (mm)', 'value' => '10474'],
-                    ['label' => 'Travel speed (km/h)',      'value' => '7,2'],
+                    'columns' => ['Model', 'Kapasitas Maks (kg)', 'Tinggi Angkat Maks (mm)', 'Kecepatan Jalan (km/h)'],
+                    'rows' => [
+                        ['FM-X 14', '1400', '9500', '7,2'],
+                        ['FM-X 16', '1600', '9500', '7,2'],
+                        ['FM-X 20', '2000', '10474', '7,2'],
+                        ['FM-X 25', '2500', '10474', '6,5'],
+                    ],
                 ],
                 'downloads' => [
                     [

@@ -649,6 +649,7 @@
 
                     <!-- Col 7: Content panel -->
                     <div v-if="activeSolution" class="md:col-span-7">
+                        <!-- Video embed -->
                         <div
                             v-if="activeSolutionVideoEmbed"
                             class="w-full aspect-video bg-slate-100 mb-8"
@@ -659,6 +660,17 @@
                                 frameborder="0"
                                 allowfullscreen
                             ></iframe>
+                        </div>
+                        <!-- Image -->
+                        <div
+                            v-else-if="activeSolutionImageUrl"
+                            class="w-full mb-8"
+                        >
+                            <img
+                                :src="activeSolutionImageUrl"
+                                :alt="activeSolution.label"
+                                class="w-full max-h-96 object-contain rounded"
+                            />
                         </div>
                         <div
                             class="detail-content"
@@ -1254,6 +1266,12 @@ function toEmbedVideoUrl(url) {
 const activeSolutionVideoEmbed = computed(() =>
     toEmbedVideoUrl(activeSolution.value?.video_url),
 );
+
+const activeSolutionImageUrl = computed(() => {
+    const s = activeSolution.value;
+    if (!s) return null;
+    return s.media_type === 'image' && s.image_url ? s.image_url : null;
+});
 
 function getYoutubeId(url) {
     if (!url) return null;
