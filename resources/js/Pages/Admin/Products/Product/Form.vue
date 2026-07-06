@@ -394,10 +394,16 @@ function removeDetail(index) {
 // Solution item image state (keyed by `${gi}_${ii}`)
 const solutionItemImgModes    = ref({});
 const solutionItemImgPreviews = ref({});
-// Init modes from existing product data (URL → 'url', else 'upload')
+// Init modes: external URL (http) → 'url', stored file (/storage/) → 'upload' + set preview
 (props.product?.solutions ?? []).forEach((g, gi) => {
     (g.items ?? []).forEach((item, ii) => {
-        solutionItemImgModes.value[`${gi}_${ii}`] = item.image_url ? 'url' : 'upload';
+        const key = `${gi}_${ii}`;
+        if (item.image_url?.startsWith('http')) {
+            solutionItemImgModes.value[key] = 'url';
+        } else {
+            solutionItemImgModes.value[key] = 'upload';
+            if (item.image_url) solutionItemImgPreviews.value[key] = item.image_url;
+        }
     });
 });
 
