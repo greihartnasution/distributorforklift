@@ -60,7 +60,7 @@ class ProductRequest extends FormRequest
             'solutions.*.items.*.label'          => ['required_with:solutions.*.items', 'string', 'max:255'],
             'solutions.*.items.*.media_type'     => ['nullable', 'in:video,image'],
             'solutions.*.items.*.video_url'      => ['nullable', 'url', 'max:500'],
-            'solutions.*.items.*.image_url'      => ['nullable', 'url', 'max:500'],
+            'solutions.*.items.*.image_url'      => ['nullable', 'string', 'max:500'],
             'solutions.*.items.*.content'        => ['nullable', 'string'],
             'solution_item_images'               => ['nullable', 'array'],
             'solution_item_images.*'             => ['nullable', 'image:allow_svg', 'max:3072'],
